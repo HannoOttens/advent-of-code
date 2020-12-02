@@ -1,4 +1,4 @@
-with open("a.txt", "r") as f:
+with open("b.txt", "r") as f:
     nums = list(map(int,f.readlines()))
 def f():
     for ii, i in enumerate(nums):

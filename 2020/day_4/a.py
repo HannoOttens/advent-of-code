@@ -1,4 +1,4 @@
-with open("a.txt", "r") as f:
+with open("input.txt", "r") as f:
     file = f.read() 
 
 new_passport = '\n\n'

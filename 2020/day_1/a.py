@@ -1,9 +1,9 @@
-with open("a.txt", "r") as f:
+with open("input.txt", "r") as f:
     nums = list(map(int,f.readlines()))
-def f():
+def fun():
     for i in nums:
         for j in nums:
             if i + j == 2020:
                 print(i * j)
                 return
-f()
+fun()

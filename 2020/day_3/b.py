@@ -1,4 +1,4 @@
-with open("a.txt", "r") as f:
+with open("input.txt", "r") as f:
     lines = f.read().splitlines() 
 w = len(lines[0])
 h = len(lines)

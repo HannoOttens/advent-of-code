@@ -1,4 +1,4 @@
-with open("b.txt", "r") as f:
+with open("input.txt", "r") as f:
     lines = f.readlines()
 valid = 0
 for line in lines:

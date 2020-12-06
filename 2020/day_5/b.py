@@ -1,4 +1,4 @@
-with open("b.txt", "r") as f:
+with open("input.txt", "r") as f:
     lines = f.read().splitlines()
 my_seat = (888 * 889 // 2) - (88 * 89 // 2)
 for seat in lines:

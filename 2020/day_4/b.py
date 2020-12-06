@@ -18,7 +18,7 @@ validator = {'byr': lambda v: 1920 <= int(v) <= 2002,
              'pid': lambda v: len(v) == 9 and v.isdigit()}
 
 # Open file
-with open("b.txt", "r") as f:
+with open("input.txt", "r") as f:
     file = f.read()
 
 # Passport separtor

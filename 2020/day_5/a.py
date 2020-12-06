@@ -1,4 +1,4 @@
-with open("a.txt", "r") as f:
+with open("input.txt", "r") as f:
     lines = f.read().splitlines()
 _max = 0
 for seat in lines:

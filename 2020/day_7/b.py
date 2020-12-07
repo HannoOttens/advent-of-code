@@ -27,9 +27,27 @@ def dfs(bag, bags_dict):
     return s
 
 # ===================
+# Fancy infix stuff
+# ===================
+
+class Infix:
+    def __init__(self, function):
+        self.function = function
+    def __ror__(self, other):
+        return Infix(lambda x, self=self, other=other: self.function(other, x))
+    def __or__(self, other):
+        return self.function(other)
+    def __rlshift__(self, other):
+        return Infix(lambda x, self=self, other=other: self.function(other, x))
+    def __rshift__(self, other):
+        return self.function(other)
+    def __call__(self, value1, value2):
+        return self.function(value1, value2)
+
+# ===================
 # Paser lib stuff
 # ===================
-def cont(p1, p2):
+def __cont(p1, p2):
     def f(s):
         s2 = parseWS(s)
         r1, s3 = p1(s2)
@@ -40,23 +58,26 @@ def cont(p1, p2):
         else:
             return None, s
     return f
+cont = Infix(__cont)
 
 # Cont, but drop first
-def _cont(p1, p2):
+def ___cont(p1, p2):
     def f(s):
         res,s2 = cont(p1,p2)(s)
         if res != None:
             return res[1],s2
         return None, s
     return f
+_cont = Infix(___cont)
 
-def cor(p1, p2):
+def __cor(p1, p2):
     def f(s):
         r1, s2 = p1(s)
         if r1 == None:
             return p2(s)
         return r1, s2
     return f
+cor = Infix(__cor)
 
 def parseChar(c):
     def f(s):
@@ -107,8 +128,7 @@ def parseWS(s):
 # ===================
 
 def parseBag(s):
-    bag = cont(parseWord,
-               cont(parseWord,parseWord))(s)
+    bag = (parseWord <<cont>> (parseWord <<cont>> parseWord))(s)
     if bag != None:
         [tint, [color, tag]], s2 = bag
         if tag == 'bag' or tag == 'bags':
@@ -128,10 +148,11 @@ def parseContain(s):
     return None, s
 
 def parseRule(s):
-    r = cont(parseBag, 
-             _cont(parseContain, cor(parseNoOther, 
-                                     parseList(parseChar(','), 
-                                               cont(parseNum, parseBag)))))(s)
+    r = (parseBag <<cont>> (parseContain 
+                  <<_cont>> (parseNoOther 
+                            <<cor>> 
+                            parseList(parseChar(','), 
+                                      parseNum <<cont>> parseBag))))(s)
     return r
 
 

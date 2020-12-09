@@ -1,41 +1,3 @@
-
-# ===================
-# Code
-# ===================
-
-def main():
-    with open("input.txt", "r") as f:
-        rules = f.read()
-    
-    (code, rest) = parseCode(rules)
-    print(code,rest)
-    if rest != '':
-        raise "Parsing error! Remaining input: " + rest
-    
-    pc = 0
-    acc = 0
-    pc_set = set()
-    while pc not in pc_set:
-        pc_set.add(pc)
-        (inst, n) = code[pc]
-        if inst == 'nop':
-            pc += 1 
-        if inst == 'acc':
-            acc += n
-            pc += 1
-        if inst == 'jmp':
-            pc += n
-    print(acc)
-
-# ===================
-# DFS
-# ===================
-def dfs(bag, bags_dict):
-    s = 0
-    for count, c_bag in bags_dict[bag]:
-        s += count + count * dfs(c_bag, bags_dict)
-    return s
-
 # ===================
 # Fancy infix stuff
 # ===================
@@ -138,16 +100,3 @@ def parseWS(s):
     while len(s) > 0 and s[0] == ' ':
         s = s[1:]
     return s
-
-# ===================
-# Algebra
-# ===================
-
-def parseLine(s):
-    return (parseWord <<cont>> parseNum)(s)
-
-def parseCode(s):
-    return (parseList(parseChar('\n'), parseLine))(s)
-
-# call main
-main()

@@ -13,8 +13,7 @@ def main():
         raise "Parsing error! Remaining input: " + rest
     
     # Find target
-    index = 26
-    while index < len(code):
+    for index in range(26, len(code)):
         target = code[index]
         sum_list = code[index-25:index]
         if not check_target(target, sum_list):
@@ -25,11 +24,11 @@ def main():
     target = code[index]
     
     # Find sum
-    index = 0
-    while True:
+    for index in range(len(code)):
         _min = 9999999999999999999999999
         _max = 0
         _sum = 0
+        
         i = index
         while _sum < target:
             _min = min(_min, code[i])
@@ -39,8 +38,6 @@ def main():
         
         if _sum == target:
             break
-
-        index += 1
 
     print(f'Target: {target}, Index: {index}, I: {i}')
     print(f'Min: {_min}, Max: {_max}, Sum: {_min+_max}')

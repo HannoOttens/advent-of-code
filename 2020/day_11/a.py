@@ -18,25 +18,12 @@ def main():
 
     # Evolve!
     generation = 0
-    while True:
-        if not evolve(seat_plan_a, seat_plan_b):
-            break
-        print("=============")
-        print("AAAAAAAAAAAA")
-        print_plan(seat_plan_a)
-        print("BBBBBBBBBBBB")
-        print_plan(seat_plan_b)
+    while evolve(seat_plan_a, seat_plan_b):
         t = seat_plan_b
         seat_plan_b = seat_plan_a
         seat_plan_a = t
-        print("AAAAAAAAAAAA")
-        print_plan(seat_plan_a)
-        print("BBBBBBBBBBBB")
-        print_plan(seat_plan_b)
-        print("=============")
         generation += 1
-        if generation > 2:
-            break
+        print(generation)
 
     # Output
     print_plan(seat_plan_b)
@@ -52,6 +39,9 @@ def evolve(old_plan, new_plan):
     changed = False
     for x in range(len(old_plan))[1:-1]:
         for y in range(len(old_plan[0]))[1:-1]:
+            if x == 1 and y == 1:
+                print(live(old_plan, x, y))
+                print(dead(old_plan, x, y))
             if old_plan[x][y] == '.':
                 continue
             if live(old_plan, x, y):
@@ -60,6 +50,8 @@ def evolve(old_plan, new_plan):
             elif dead(old_plan, x, y): 
                 changed = True
                 new_plan[x][y] = 'L'
+            else:
+                new_plan[x][y] = old_plan[x][y]
     return changed
 
 def free(seat):
@@ -79,6 +71,7 @@ def dead(old_plan, x, y):
                 and sum(taken(old_plan[x+dx-1][y+dy-1])
                         for dx in range(3) 
                         for dy in range(3)) > 4)
+
 
 def border(plan):
     l = len(plan[0]) + 2

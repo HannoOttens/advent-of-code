@@ -14,7 +14,7 @@ def main():
     (seat_plan, _) = parseSeatPlan(rules)
     seat_plan_a = border(seat_plan)
     seat_plan_b = border(seat_plan)
-    print_plan(seat_plan_a)
+    print_plan(seat_plan)
 
     # Evolve!
     generation = 0
@@ -39,15 +39,13 @@ def evolve(old_plan, new_plan):
     changed = False
     for x in range(len(old_plan))[1:-1]:
         for y in range(len(old_plan[0]))[1:-1]:
-            if x == 1 and y == 1:
-                print(live(old_plan, x, y))
-                print(dead(old_plan, x, y))
+            oa = occupied_arround(old_plan, x, y)
             if old_plan[x][y] == '.':
                 continue
-            if live(old_plan, x, y):
+            if live(old_plan, x, y, oa):
                 changed = True
                 new_plan[x][y] = '#'
-            elif dead(old_plan, x, y): 
+            elif dead(old_plan, x, y, oa): 
                 changed = True
                 new_plan[x][y] = 'L'
             else:
@@ -60,23 +58,33 @@ def free(seat):
 def taken(seat):
     return seat == '#'
 
-def live(old_plan, x, y):
-    return (old_plan[x][y] == 'L'
-            and all(free(old_plan[x+dx-1][y+dy-1])
-                for dx in range(3) 
-                for dy in range(3)))
+def live(old_plan, x, y, oa):
+    return (old_plan[x][y] == 'L' and oa == 0)
 
-def dead(old_plan, x, y):
-    return (old_plan[x][y] == '#'  
-                and sum(taken(old_plan[x+dx-1][y+dy-1])
-                        for dx in range(3) 
-                        for dy in range(3)) > 4)
+def dead(old_plan, x, y, oa):
+    return (old_plan[x][y] == '#' and oa >= 5)
 
-def direction_generator(old_plan, x, y):
-    w = len(old_plan)
-    idx = x * w + y
-    while 
-    yield return
+def directions():
+    return [(dx-1, dy-1) for dx in range(3) for dy in range(3) if not (dx == 1 and dy == 1)]
+
+
+def occupied_arround(old_plan, x, y):
+    h = len(old_plan)
+    w = len(old_plan[0])
+    
+    occupied_arround = 0
+    for (dx,dy) in directions():
+        for d in range(1, 1000000):
+            x2 = x + dx * d 
+            y2 = y + dy * d
+            if x2 < 0 or x2 >= h or y2 < 0 or y2 >= w:
+                break
+            if old_plan[x2][y2] == '#':
+                occupied_arround += 1
+                break
+            if old_plan[x2][y2] == 'L':
+                break
+    return occupied_arround
 
 def border(plan):
     l = len(plan[0]) + 2
@@ -96,7 +104,7 @@ def print_plan(plan):
 # ===================
 
 def parseLine(s):
-    return (parseList(parseNone, parseChar('L') <<cor>> parseChar('.')))(s)
+    return (parseList(parseNone, parseChar('L') <<cor>> parseChar('.') <<cor>> parseChar('#')))(s)
 
 def parseSeatPlan(s):
     return parseList(parseChar('\n'), parseLine)(s)

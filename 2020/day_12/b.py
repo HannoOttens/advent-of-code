@@ -16,28 +16,28 @@ def main():
     if rest != "":
         raise Exception("Remaining input in parser: " + rest)
 
-    y = 1
-    x = 10
+    n = 1
+    e = 10
     psy = 0
     psx = 0
-    for (c, n) in steps:
+    for (c, num) in steps:
         if c == 'N':
-            y += n
+            n += num
         elif c == 'E':
-            x += n
+            e += num
         elif c == 'S':
-            y -= n
+            n -= num
         elif c == 'W':
-            x -= n
+            e -= num
 
         elif c == 'F':
-            for _ in range(n):
-                psy += y 
-                psx += x
+            for _ in range(num):
+                psy += n 
+                psx += e
         elif c == 'R':
-            x, y = turn(n, x, y)
+            e, n = turn(num, e, n)
         elif c == 'L':
-            x, y = turn(360 - n, x, y)
+            e, n = turn(360 - num, e, n)
         else:
             raise Exception("Unknown command: " + c)
 
@@ -47,9 +47,9 @@ def main():
 def turn(deg, x, y):
     steps = deg // 90
     for _ in range(steps):
-        y = -x
-        x = y
-    return x, y
+        n = -e
+        e = n
+    return e, n
 
 
     # # Normalize, always turn right

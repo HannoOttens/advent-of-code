@@ -44,11 +44,12 @@ def main():
     print(abs(psx) + abs(psy))
 
 
-def turn(deg, x, y):
+def turn(deg, e, n):
     steps = deg // 90
     for _ in range(steps):
+        n2 = n
         n = -e
-        e = n
+        e = n2
     return e, n
 
 

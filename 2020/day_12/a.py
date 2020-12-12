@@ -52,31 +52,9 @@ def turn(_dir, deg, dx, dy):
         _dir = 'L' if _dir == 'R' else 'R'
 
     if _dir == 'R':
-        if dx == 0:
-            return (dy, 0)
-        if dy == 0:
-            return (0, -dx)
+        return (dy, -dx)
     if _dir == 'L':
-        if dx == 0:
-            return (-dy, 0)
-        if dy == 0:
-            return (0, dx)
-
-
-    # # Normalize, always turn right
-    # if _dir == 'R':
-    #     deg = -deg
-
-    # sdx = math.acos(dx)
-    # rdeg = deg * (math.pi / 180)
-    # print(rdeg)
-    # print(sdx)
-
-    # dx2 = math.cos(sdx + rdeg)
-    # dy2 = math.sin(sdx + rdeg)
-
-    # return round(dx2), round(dy2)
-
+        return (-dy, dx)
 
 # ===================
 # Algebra

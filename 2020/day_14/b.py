@@ -37,21 +37,21 @@ def apply_mask(mask, value):
     value_bits = list(bin(value))[2:]
     value_bits = (len(mask) - len(value_bits)) * ['0'] + value_bits
 
+    # Apply mask
     for idx, mask_bit in enumerate(reversed(mask)):
         if mask_bit == '1':
             value_bits[-(idx+1)] = '1'
         elif mask_bit == 'X':
             value_bits[-(idx+1)] = 'X'
 
-    # Convert back to int
-    return ''.join(value_bits)
+    return value_bits
 
 def assign_to_floating(mem, floating_addr, value):
     # Get all indexes of Xs
     floats = list(map(itemgetter(0), filter(lambda t: t[1] == 'X', enumerate(floating_addr))))
     # Set all combinations to one
     for ones in powerset(floats):
-        addr_bits = list(floating_addr)
+        addr_bits = floating_addr[:]
         # Set ones
         for one in ones:
             addr_bits[one] = '1'
@@ -59,7 +59,7 @@ def assign_to_floating(mem, floating_addr, value):
         for idx in range(len(addr_bits)):
             if addr_bits[idx] == 'X':
                 addr_bits[idx] = '0'
-
+        # Assign value to address
         address = int('0b' + ''.join(addr_bits), 2)
         mem[address] = value
 

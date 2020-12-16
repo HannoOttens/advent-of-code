@@ -1,6 +1,7 @@
 
 from parsers import *
 from collections import defaultdict
+from functools import reduce
 
 # ===================
 # Code
@@ -51,10 +52,7 @@ def main():
                     opts[field] = False
     
     # Multiply motherfucker
-    n = 1
-    for idx, field in assignment.items():
-        if field.startswith('departure '):
-            n *= my_ticket[idx]
+    n = reduce(lambda n, kv: n * my_ticket[kv[0]] if kv[1].startswith('departure ') else n, assignment.items(), 1)
     print(n)
 
 

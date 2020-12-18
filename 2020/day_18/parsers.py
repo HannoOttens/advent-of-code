@@ -1,3 +1,5 @@
+from functools import reduce
+
 # ===================
 # Fancy infix stuff
 # ===================
@@ -151,17 +153,22 @@ def parseNewlines(s):
         nl, s2 = parseNewline(s2)
     return '\n', s2
 
-class Parens:
-    def __init__(self, expr):
-        self.expr = expr
-
-    def __str__(self):
-        return '(' + self.expr + ')'
-
 def parens(parser):
     def f(s):
         r, s2 = (parseChar('(') |d_cont| (parser |cont_d| parseChar(')')))(s)
         if r:
             return r, s2
         return None, s
+    return f
+
+def many(parser):
+    return parseList(parseNone, parser)
+
+def chainl(pe, po):
+    def f(s):
+        res, s2 = (pe |cont| many(po |cont| pe))(s)
+        if res == None:
+            return None, s
+        (x,l) = res
+        return reduce(lambda a, op_n: (a, op_n[0], op_n[1]), l, x), s2
     return f

@@ -15,8 +15,10 @@ def main():
         print(exprs)
         raise Exception("Parser failed, remaining input:\n"+rest)
     
+    total = 0
     for expr in exprs:
-        print(expr)
+        total += evalExpr(expr)
+    print(total)
 
 def evalExpr(expr):
     # Base case
@@ -40,10 +42,7 @@ def parseOp(s):
     return (parseChar('+') |cor| parseChar('*'))(s)
 
 def parseExpr(s):
-    pExpr = ((parseExpr |cont| parseOp |cont| parseExpr) 
-        |cor| parens(parseExpr))
-    print(s)
-    return (parseNum |cont| pExpr)(s)
+    return chainl(parseNum |cor| parens(parseExpr), parseOp)(s)
 
 def parseExprs(s):
     return parseList(parseChar('\n'), parseExpr)(s)

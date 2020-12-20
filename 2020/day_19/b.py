@@ -35,8 +35,8 @@ def makeParser(alg):
         d[key] = parser
 
     # Change 8 and 11
-    d[8]  = parserFor(d, [42]) |cont| ( parserFor(d, [8])  |cor| parseNone)
-    d[11] = parserFor(d, [42]) |cont| ((parserFor(d, [11]) |cor| parseNone) |cont| parserFor(d, [31]))
+    d[8]  = d[42] |cont| ( parserFor(d, [8])  |cor| parseNone)
+    d[11] = d[42] |cont| ((parserFor(d, [11]) |cor| parseNone) |cont| d[31])
 
     return d[0]
 

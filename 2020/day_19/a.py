@@ -10,36 +10,29 @@ def main():
     with open("input.txt", "r") as f:
         rules = f.read()
 
-    (alg,   rest) = parseAlgebra(rules)
-    (_,     rest) = (parseNewline |cont| parseNewline)(rest)
-    (lines, rest) = parseLines(rest)
+    (alg,   rest) = list(parseAlgebra(rules))[0]
+    (_,     rest) = list((parseNewline |cont| parseNewline)(rest))[0]
+    (lines, rest) = list(parseLines(rest))[0]
     if len(rest) > 0:
         raise "Parsing failed"
+
     parser = makeParser(dict(alg))
-    
+
     valid = 0
     for l in lines:
-        _, rest = parser(l)
-        if len(rest) == 0:
-            valid += 1
+        for (_, rem) in list(parser(l)):
+            if rem == '':
+                valid += 1
+                break
     print(valid)
 
 def makeParser(alg):
     d = dict()
-    for key, options in reversed(alg.items()):
-        parser = parseFail
-        for option in options:
-            parser = parser |cor| parserFor(d, option)
+    for key, options in alg.items():
+        parser = parserFor(d, options[0])
+        for option in options[1:]:
+            parser = parser |cor| parserFor(d, option) 
         d[key] = parser
-
-    # Change 8 and 11
-    def p8(s):
-        return (d[42] |cont| (d[8] |cor| parseNone))(s)
-    d[8] = p8
-    
-    def p11(s):
-        return (d[42] |cont| ((d[11] |cont| d[31]) |cor| d[31]))(s)
-    d[11] = p11
 
     return d[0]
 
@@ -58,7 +51,7 @@ def parserFor(d, option):
 # ===================
 
 def parseOption(s):
-    return parseList(parseWS, parseNum)(s)
+    return parseList(parseNone, parseNum)(s)
 
 def parseTerm(s):
     return (parseChar('"') 

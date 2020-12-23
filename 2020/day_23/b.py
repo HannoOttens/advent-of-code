@@ -1,41 +1,42 @@
-# Source: https://github.com/pvillano/advent2020/blob/main/day_23_3_hash_and_links.py#L1
-import time
+_str = '389125467'
+inp = []
+for c in _str:
+    inp.append(int(c))
 
-start_time = time.time()
+# Make dict of cup to next cup
+d = dict()
+for i in range(1000000):
+    d[i] = i+1
+for k, v in zip(inp, inp[1:] + [len(inp) + 1]):
+    d[k] = v
+d[1000000] = inp[0]
 
-data = """..."""
-test_data = """389125467"""
+# Iterate!
+mn = min(inp)
+mx = 1000000
+current = inp[0]
+for i in range(10000000):
+    p1 = d[current]
+    p2 = d[p1]
+    p3 = d[p2]
 
-cups_list = list(map(int, list(test_data)))
+    # Find target
+    target = current - 1
+    while target < mn or target in [p1,p2,p3]:
+        target = target - 1
+        if target < mn: # Loop back to max
+            target = mx 
 
-cups_map = list(range(1,1000000+2))
+    gap_r = d[p3]
+    r_join_r = d[target]
 
-for k, v in zip(cups_list, cups_list[1:] + [len(cups_list) + 1]):
-    cups_map[k] = v
+    d[current] = gap_r  
+    d[target] = p1    
+    d[p3] = r_join_r    
 
-cups_map[1000000] = cups_list[0]
+    current = d[current]
 
-cur_cup = cups_list[0]
-
-for i in range(10*1000000):
-
-    r1 = cups_map[cur_cup]
-    r2 = cups_map[r1]
-    r3 = cups_map[r2]
-    dest_cup = (cur_cup - 2) % 1000000 + 1
-    while dest_cup == r3 or dest_cup == r2 or dest_cup == r1:
-        dest_cup = (dest_cup - 2) % 1000000 + 1
-
-    gap_r = cups_map[r3]
-    r_join_r = cups_map[dest_cup]
-
-    cups_map[cur_cup] = gap_r  # gap = (cur_cup, cups_map[r3])
-    cups_map[dest_cup] = r1    # l_join = (dest_cup, r1)
-    cups_map[r3] = r_join_r    # r_join = (r3, cups_map[dest_cup])
-
-    cur_cup = cups_map[cur_cup]
-
-c1 = cups_map[1]
-c2 = cups_map[c1]
-end_time = time.time()
-print(c1, c2, c1*c2, end_time-start_time)
+# Print result
+c1 = d[1]
+c2 = d[c1]
+print(c1*c2)

@@ -47,9 +47,7 @@ def main():
                 new_active[(x,y)] = True
 
         active = new_active
-
-
-        print(f'Day {gen}: {len(active)}')
+    print(f'Day {gen}: {len(active)}')
 
 
 def neighbours(x,y):

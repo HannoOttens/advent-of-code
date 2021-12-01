@@ -1,2 +1,4 @@
 **.pdb
 .vscode/
+obj/
+bin/

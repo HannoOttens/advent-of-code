@@ -1,4 +1,10 @@
-﻿var lines = File.ReadAllLines("../input.txt");
+﻿using System.Diagnostics;
+
+var lines = File.ReadAllLines("../input.txt");
+
+var stopwatch = new Stopwatch();
+stopwatch.Start();
+
 var actv = new bool[lines.Length];
 
 // Count active bits
@@ -69,4 +75,7 @@ for(int i = 0; i < oxy.Length; i++) {
 	b /= 2;
 }
 
+stopwatch.Stop();
+
 Console.WriteLine(oxyN * co2N);
+Console.WriteLine($"{stopwatch.ElapsedMilliseconds/1000.0}s");

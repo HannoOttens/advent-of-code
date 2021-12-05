@@ -1,4 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿// See https://bka.ms/new-console-template for more information
 
 var lines = File.ReadAllLines("../input.txt");
 

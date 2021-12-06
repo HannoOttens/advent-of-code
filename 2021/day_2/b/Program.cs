@@ -1,6 +1,4 @@
-﻿// See https://bka.ms/new-console-template for more information
-
-var lines = File.ReadAllLines("../input.txt");
+﻿var lines = File.ReadAllLines("../input.txt");
 
 int x = 0;
 int a = 0;

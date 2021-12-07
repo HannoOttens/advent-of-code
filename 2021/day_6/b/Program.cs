@@ -26,8 +26,6 @@ long simiFish(int start) {
 		// Buffer terugkopieren
 		for (int i = 0; i < 9; i++) { fiss[i] = fisB[i]; fisB[i] = 0; }
 		days++;
-
-		// TODO: Maar 1x doen
 	}
 	return fiss.Aggregate((s, n) => s + n);
 }

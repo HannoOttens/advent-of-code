@@ -6,6 +6,7 @@ function main() {
 	New-Item $day -ItemType "directory"
 	Set-Location $day
 	New-Item "input.txt"
+	.\input.txt
 	dotnet.exe new console -n a
 	dotnet.exe new console -n b
 	Set-Location a

@@ -1,9 +1,4 @@
-﻿using System.Diagnostics;
-using static System.Math;
-
-// Globals
-
-// Readin
+﻿// Readin
 var caves = new List<Cave>();
 var index = new Dictionary<string, int>();
 var lines = File.ReadAllLines("../input.txt");

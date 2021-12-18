@@ -57,7 +57,7 @@ Console.WriteLine($"Risklevel: {riskFactor}");
 SortedSet<(int,int)> findBasin(
 	byte[,] grid, 
 	int x, int y, 
-	SortedSet<(int,int)> basin = null) 
+	SortedSet<(int,int)>? basin = null) 
 {
 	if(basin == null) 
 		basin = new SortedSet<(int,int)>() {(x,y)};

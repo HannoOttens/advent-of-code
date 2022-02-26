@@ -27,10 +27,10 @@ while((state.x != sizeX-1) || (state.y != sizeY-1)) {
 				states.Enqueue((x,y,newCost), newCost);
 			}
 		}
-
 	grid[state.x,state.y] = setVisited(grid[state.x,state.y]);
 	state = states.Dequeue();
 }
+
 Console.WriteLine($"Lowest cost path: {state.cost}");
 Console.WriteLine(printGrid(grid));
 

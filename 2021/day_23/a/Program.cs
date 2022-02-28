@@ -16,11 +16,7 @@ string[] map = new string[] {
 	(-1, 0), (1, 0), (0, -1), (0, 1)
 };
 
-int charToIndex(char c) {
-	return ((int)c % 32) - 1;
-}
-
-List<int> computePath(sbyte[,] graph, int i, int j) {
+(List<int>, int) computePath(sbyte[,] graph, int i, int j) {
 	// Route vinden (dijkstra)
 	var visited = new List<int>();
 	var states = new PriorityQueue<(int, int, int), int>();
@@ -31,7 +27,7 @@ List<int> computePath(sbyte[,] graph, int i, int j) {
 			visited.Add(state.pos);
 			fromArry[state.pos] = (state.prev);
 			for(int k = 0; k < MAX_NODE; k++) {
-				if(graph[state.pos, k] == 127 || visited.Contains(k)) continue;
+				if(graph[state.pos,k] < 0 || visited.Contains(k)) continue;
 				var newCost = state.cost + graph[state.pos,k];
 				states.Enqueue((k,state.pos,newCost), newCost);
 			}
@@ -41,63 +37,45 @@ List<int> computePath(sbyte[,] graph, int i, int j) {
 	fromArry[j] = state.prev;
 	
 	// Route terughalen
-	List<int> route = new List<int>() { j };
+	List<int> route = new List<int>() {j};
 	int p = j;
 	while(p != i) {
 		int prev = fromArry[p];
 		route.Add(prev);
 		p = prev;
 	}
-	route.Reverse();
-	return route;
-}
-
-List<int>[,] allPaths(sbyte[,] graph) {
-	var paths = new List<int>[MAX_NODE,MAX_NODE];
-	for (int i = 0; i < MAX_NODE; ++i)
-		for (int j = 0; j < MAX_NODE; ++j)
-			if(validMove(i,j)) {
-				paths[i,j] = computePath(graph, i,j);
-			}
-
-	return paths;
-}
-
-void floydWarshall(sbyte[,] graph)
-{
-	for (int k = 0; k < MAX_NODE; ++k)
-		for (int i = 0; i < MAX_NODE; ++i)
-			for (int j = 0; j < MAX_NODE; ++j)
-				if (graph[i, k] + graph[k, j] < graph[i, j])
-					graph[i, j] = (sbyte)(graph[i, k] + graph[k, j]);
+	return (route, state.cost);
 }
 
 bool roomToHall(int from, int dest) {
 	return (from <= MAX_ROOM) && (dest > MAX_ROOM);
 }
-
 bool hallToRoom(int from, int dest) {
 	return (from > MAX_ROOM) && (dest <= MAX_ROOM);
 }
-
 bool validMove(int from, int dest) {
 	return (roomToHall(from, dest) || hallToRoom(from, dest));
 }
-
-void applyRules(sbyte[,] graph) {
+(List<int>, int)[,] allPaths(sbyte[,] graph) {
+	var paths = new (List<int>, int)[MAX_NODE,MAX_NODE];
 	for (int i = 0; i < MAX_NODE; ++i)
 		for (int j = 0; j < MAX_NODE; ++j)
-			if (!validMove(i, j))
-				graph[i, j] = -1;
+			if(validMove(i,j)) 
+				paths[i,j] = computePath(graph, i,j);
+	return paths;
 }
 
-List<int>[,] paths;
-List<(int,int)> validPairs = new List<(int, int)>();
-sbyte[,] makeTable() {
+int charToIndex(char c) {
+	return ((int)c % 32) - 1;
+}
+
+(List<int> path, int cost)[,] paths;
+List<(int,int,int)> validPairs = new List<(int, int, int)>();
+void makeTable() {
 	var tabl = new sbyte[MAX_NODE,MAX_NODE];
 	for(int x = 0; x < MAX_NODE; x++)
 		for(int y = 0; y < MAX_NODE; y++)
-			tabl[x,y] = sbyte.MaxValue;
+			tabl[x,y] = -1;
 
 	for(int x = 0; x < map.Length; x++) {
 		for(int y = 0; y < map[0].Length; y++) {
@@ -124,36 +102,13 @@ sbyte[,] makeTable() {
 			}
 		}	
 	}
-
 	// Post process to get routes
 	paths = allPaths(tabl); 
-	floydWarshall(tabl);
-	applyRules(tabl);
 	for(int x = 0; x < MAX_NODE; x++)
 		for(int y = 0; y < MAX_NODE; y++)
-			if(tabl[x,y] > 0) validPairs.Add((x,y));
-
-	// Show table
-	for(int x = 0; x < MAX_NODE; x++) {
-		Console.Write("\t");
-		Console.Write((char)((int)('A') + x));
-	}
-	Console.WriteLine();
-
-	for(int x = 0; x < MAX_NODE; x++) {
-		Console.Write((char)((int)('A') + x));
-		Console.Write(":\t");
-		for(int y = 0; y < MAX_NODE; y++) {
-			if(tabl[x,y] > 0) Console.Write(' ');
-			Console.Write(tabl[x,y]);
-			Console.Write('\t');
-		}
-		Console.WriteLine();
-	}
-	return tabl;
+			if(paths[x,y].path != null) validPairs.Add((x,y, paths[x,y].cost));
 }
-
-var stepCost = makeTable();
+makeTable();
 
 var costMultiplier = new Dictionary<char, int>() {
 	{ 'A', 1 },
@@ -161,12 +116,8 @@ var costMultiplier = new Dictionary<char, int>() {
 	{ 'C', 100 },
 	{ 'D', 1000 }
 };
-var roomFor = new Dictionary<int, char>() {
-	{ 0, 'A' },
-	{ 1, 'B' },
-	{ 2, 'C' },
-	{ 3, 'D' }
-};
+var roomFor = new char[] { 'A', 'B', 'C', 'D'};
+
 var visited = new Dictionary<string, bool>();
 
 var cols = new char[MAX_NODE];
@@ -174,14 +125,17 @@ cols[0]  = lines[2][3];
 cols[1]  = lines[3][3];
 cols[2]  = lines[4][3];
 cols[3]  = lines[5][3];
+
 cols[4]  = lines[2][5];
 cols[5]  = lines[3][5];
 cols[6]  = lines[4][5];
 cols[7]  = lines[5][5];
+
 cols[8]  = lines[2][7];
 cols[9]  = lines[3][7];
 cols[10] = lines[4][7];
 cols[11] = lines[5][7];
+
 cols[12] = lines[2][9];
 cols[13] = lines[3][9];
 cols[14] = lines[4][9];
@@ -194,20 +148,14 @@ cols[20] = '.';
 cols[21] = '.';
 cols[22] = '.';
 
+bool empty = false;
 (char[] arr, int cost, int lastToMove) state = (cols,0,-1);
 var states = new PriorityQueue<(char[],int,int), int>();
-int iter = 0;
 while(!isOrganized(state.arr)) {
-	iter++;
-	if (iter % 1000_000 == 0)  {
-		Console.WriteLine(state.cost);
-		Console.WriteLine(iter);
-	}
 	string stateStr = new string(state.arr);
 	if(!visited.ContainsKey(stateStr)) {
-		visited[stateStr] = true;
-		foreach((int from, int dest) in validPairs)
-			if(state.arr[from] != '.' 
+		foreach((int from, int dest, int cost) in validPairs)
+			if(state.arr[from] != '.'
 				&& state.arr[dest] == '.'
 				&& canGoInRoom(state.arr, from, dest)
 				&& validRoute(state.arr, from, dest))
@@ -216,19 +164,24 @@ while(!isOrganized(state.arr)) {
 				for(int c = 0; c < MAX_NODE; c++) newS[c] = state.arr[c];
 				newS[dest] = state.arr[from];
 				newS[from] = '.';
-				if(!visited.ContainsKey(new string(newS))) {
-					var newCost = state.cost + stepCost[from,dest] * costMultiplier[state.arr[from]];
+
+				var newCost = state.cost + cost * costMultiplier[state.arr[from]];
+				if(!visited.ContainsKey(new string(newS))) 
 					states.Enqueue((newS,newCost,dest), newCost);
-				}
 			}
+		visited[stateStr] = true;
 	}
-	// Console.WriteLine(state.cost);
-	if (states.Count == 0) break;
+	if (states.Count == 0) {
+		empty = true;
+		break;
+	}
 	state = states.Dequeue();
 }
-Console.WriteLine(iter);
-
-Console.WriteLine($"{state.cost}");
+if(!empty) 
+	Console.WriteLine($"{state.cost}");
+else {
+	Console.WriteLine("Empty queue!");
+}
 
 bool isOrganized(Span<char> cols) {
 	return cols[ 0] == 'A'
@@ -249,43 +202,31 @@ bool isOrganized(Span<char> cols) {
 		&& cols[15] == 'D';
 }
 
-
-bool isDesitination(int i, char c) {
-	return c == roomFor[i];	
+bool roomIsFree (char[] stat, int room) {
+	int i1 = 4*room; 
+	int i2 = i1 + 1;
+	int i3 = i1 + 2;
+	int i4 = i1 + 3;
+	char gol = roomFor[room];
+	return (stat[i4] == '.') && (stat[i3] == '.') && (stat[i2] == '.') && (stat[i1] == '.')
+		|| (stat[i4] == gol) && (stat[i3] == '.') && (stat[i2] == '.') && (stat[i1] == '.')
+		|| (stat[i4] == gol) && (stat[i3] == gol) && (stat[i2] == '.') && (stat[i1] == '.')
+		|| (stat[i4] == gol) && (stat[i3] == gol) && (stat[i2] == gol) && (stat[i1] == '.');
 }
 
 bool canGoInRoom(char[] stat, int from, int dest) {
 	if(dest > MAX_ROOM) return true; // destination is geen kamer
 	char c = stat[from];
-	int room = indexToRoom(dest);
-	return isDesitination(room, c) && roomIsFree(stat, room);
-}
-
-int indexToRoom(int i) {
-	if (i >=  0 || i <=  3) return 0;  
-	if (i >=  4 || i <=  7) return 1;
-	if (i >=  8 || i <= 11) return 2;
-	if (i >= 12 || i <= 15) return 3;
-	return -1;
+	int room = dest/4;
+	return (c == roomFor[room]) && roomIsFree(stat, room);
 }
 
 bool validRoute(char[] state,int from, int dest) {
-	if (paths[from, dest] == null) return false;
-	foreach(var node in paths[from,dest]) {
+	if (paths[from, dest].path == null) return false;
+	foreach(var node in paths[from,dest].path) {
 		if(node == from) continue;
 		if(state[node] != '.') return false;
 	}
 	return true;
 }
 
-bool roomIsFree (char[] stat, int room) {
-	int i1 = 4*room;
-	int i2 = i1 + 1;
-	int i3 = i1 + 2;
-	int i4 = i1 + 3;
-	char goal = roomFor[room];
-	return (stat[i1] == '.' || stat[i1] == goal)
-		&& (stat[i2] == '.' || stat[i2] == goal)
-		&& (stat[i3] == '.' || stat[i3] == goal)
-		&& (stat[i4] == '.' || stat[i4] == goal);
-}

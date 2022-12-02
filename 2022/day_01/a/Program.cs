@@ -11,5 +11,6 @@ foreach (var l in lines) {
 		curC += curr;
 	}
 }
+maxC = Math.Max(maxC, curC);
 
 Console.WriteLine(maxC);

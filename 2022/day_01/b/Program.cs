@@ -11,9 +11,10 @@ int lowIndx() {
 }
 
 int curC = 0;
+int indx = 0;
 foreach (var l in lines) {
 	if (string.IsNullOrEmpty(l)) {
-		int indx = lowIndx();
+		indx = lowIndx();
 		maxC[indx] = Math.Max(maxC[indx], curC);
 		curC = 0;
 	} else {
@@ -21,5 +22,8 @@ foreach (var l in lines) {
 		curC += curr;
 	}
 }
+indx = lowIndx();
+maxC[indx] = Math.Max(maxC[indx], curC);
+
 
 Console.WriteLine(maxC.Sum());

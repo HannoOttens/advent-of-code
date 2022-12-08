@@ -18,12 +18,11 @@ foreach(string comd in cmds) {
 		case "$ ls":
 			break;
 		default:
-			Node n = new();
-			n.Up = curr;
-			n.Name = parts[1];
-			if (int.TryParse(parts[0], out int Size))
-				n.Size = Size;
-			curr.Chld.Add(n);
+			curr.Chld.Add(new Node() {
+				Up = curr,
+				Name = parts[1],
+				Size = (int.TryParse(parts[0], out int fSiz) ? fSiz : 0),
+			});
 			break;
 	}
 }
@@ -41,7 +40,6 @@ dirSizes(root);
 // Find smallest directory that frees up enough space
 int free = 70_000_000 - root.Size;
 int need = Math.Abs(free - 30_000_000);
-Console.WriteLine(need);
 
 int smallestDir = int.MaxValue;
 void dirDelete (Node n) {

@@ -28,6 +28,5 @@ public record Posi(int PosX = 0, int PosY = 0)
 	public static Posi operator -(Posi a, Posi b) => new(a.PosX - b.PosX, a.PosY - b.PosY);
 	public int Dist() => Math.Max(Math.Abs(PosX), Math.Abs(PosY));
 	// Max it maximum 1/-1 in both X and
-	public Posi Uno() => new (Math.Sign(PosX) * Math.Min(1, Math.Abs(PosX))
-							, Math.Sign(PosY) * Math.Min(1, Math.Abs(PosY)));
+	public Posi Uno() => new (Math.Sign(PosX), Math.Sign(PosY));
 }

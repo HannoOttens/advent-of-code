@@ -4,7 +4,7 @@ from collections import defaultdict
 import math
 from itertools import permutations, product
 
-_str = '389125467'
+_str = '872495136'
 inp = []
 for c in _str:
     inp.append(int(c))

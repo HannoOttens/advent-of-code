@@ -53,17 +53,6 @@ def recursiveCombat(p1,p2):
             break
         game_dict[hashVal(p1) * hashVal(p2)] = True
 
-        # Recurse
-        if c1 <= len(p1) and c2 <= len(p2):
-            # print('!!!!!!!!!!REC!!!1!!!!!!!!')
-
-            (res_p1, _) = recursiveCombat(p1[:c1], p2[:c2])
-            if len(res_p1) > 0:
-                p1.extend([c1,c2]) 
-            else:
-                p2.extend([c2,c1])
-            continue
-
         # Base
         if c1 > c2:
             p1.extend([c1,c2])

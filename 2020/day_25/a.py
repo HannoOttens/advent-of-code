@@ -1,7 +1,7 @@
 
 def main():
-    public_card = 8184785
-    public_door = 5293040
+    public_card = 2084668
+    public_door = 3704642
     private_door = crack(public_door, 7)
     print(encrypt(private_door, public_card))
 

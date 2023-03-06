@@ -13,58 +13,85 @@ def main():
     with open("input.txt", "r") as f:
         rules = f.read()
 
-    res = next(parseDishes(rules), None)
+    res = next(parsePlayers(rules), None)
     if res == None:
         raise Exception("Parsing failed")
-    dishes = res[0]
-    dishes = list(map(lambda t: (set(t[0]), set(t[1])), dishes))
-    
-    # Collect all ingredients and allergens
-    allergens = set()
-    ingredients = set()
-    for (ingrs, allrs) in dishes:
-        allergens = allergens.union(allrs)
-        ingredients = ingredients.union(ingrs)
+    print(res[0])
 
-    # Find which allergen can be combined with which ingredient
-    no_set = defaultdict(lambda: set())
-    ye_set = defaultdict(lambda: set(allergens))
-    for (ingrs, allrs) in dishes:
-        for ingr in ingrs:
-            ye_set[ingr] = ye_set[ingr].union(allrs)
-        for ingr in ingredients - ingrs:
-            no_set[ingr] = no_set[ingr].union(allrs)
-    for key, value in no_set.items():
-        ye_set[key] = ye_set[key].difference(value)
+    player1 = res[0][0][1]
+    player2 = res[0][1][1]
+    _, rnd = recursiveCombat(player1, player2)
+    print(rnd)
+    score = 0
+    score_cards = player1 if len(player1) > 0 else player2
+    print(score_cards)
+    for idx, scr in enumerate(reversed(score_cards)):
+        score += (idx + 1) * scr
+    print(score)
 
-    dangerous_ingrs = list(filter(lambda s: len(s[1]), ye_set.items()))
-    matches = []
-    while len(dangerous_ingrs) > 0:
-        for idx, (ingr, allrs) in enumerate(dangerous_ingrs):
-            if len(allrs) == 1:
-                allergen = list(allrs)[0]
-                matches.append((ingr, allergen))
-                dangerous_ingrs = list(map(lambda s: (s[0], s[1].difference(allrs)), dangerous_ingrs))
-                dangerous_ingrs = list(filter(lambda s: len(s[1]), dangerous_ingrs))
-                break
 
-    # Sort by thing
-    matches = sorted(matches, key=lambda x: x[1])
-    s = ''
-    for (ingr,_) in matches:
-        s += ingr + ','
-    print(s[0:-1])
+def recursiveCombat(p1,p2):
+    game_dict = defaultdict(bool)
+    rnd = 0
+    while len(p1) > 0 and len(p2) > 0:
+        rnd += 1
+        c1 = p1.pop(0)
+        c2 = p2.pop(0)
+
+        # print()
+        # print(f'-- Round {rnd} --')
+        # print(f'Deck P1: {p1}')
+        # print(f'Deck P2: {p2}')
+        # print(c1)
+        # print(c2)
+
+        # Game check
+        if game_dict[hashVal(p1) * hashVal(p2)]:
+            # print('BIN THERE!')
+            p1 = (p1 + p2) + lrs([c1,c2])
+            p2 = []
+            break
+        game_dict[hashVal(p1) * hashVal(p2)] = True
+
+        # Recurse
+        if c1 <= len(p1) and c2 <= len(p2):
+            # print('!!!!!!!SUBGAME!!!!!!!!')
+
+            (res_p1, _) = recursiveCombat(p1[:c1], p2[:c2])
+            if len(res_p1) > 0:
+                p2.extend([c2,c1])
+            else:
+                p1.extend([c1,c2]) 
+            continue
+
+        # Base
+        if c1 > c2:
+            p1.extend([c1,c2])
+        elif c2 > c1:
+            p2.extend([c2,c1])
+        else:
+            raise "Whut"
+
+    # print('==========END==============')
+    return (p1, p2), rnd
+
+
+def hashVal(l):
+    return hash(tuple(l))
+
+def lrs(l):
+    l.sort()
+    return list(l)
 
 # ===================
 # Algebra
 # ===================
 
-def parseDish(s):
-    return (many(parseWord) |cont| parens(parseToken('contains') |d_cont| parseList(parseChar(','), parseWord)))(s)
+def parsePlayer(s):
+    return (parseToken('Player') |d_cont| (parseNum |cont| (parseChar(':') |d_cont| (parseNewline |d_cont| parseList(parseChar('\n'), parseNum)))))(s)
 
-
-def parseDishes(s):
-    return parseList(parseChar('\n'), parseDish)(s)
+def parsePlayers(s):
+    return parseList(parseChar('\n') |cont| parseChar('\n'), parsePlayer)(s)
 
 
 # call main

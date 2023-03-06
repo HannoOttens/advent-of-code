@@ -2,28 +2,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-var connected = new int[6,4];
-const int TOP = 3, RGH = 0, BOT = 1, LFT = 2;
-connected[0, TOP] = 5; 
-connected[0, LFT] = 3; 
-
-connected[1, TOP] = 5; 
-connected[1, RGH] = 4; 
-connected[1, BOT] = 2; 
-
-connected[2, RGH] = 1; 
-connected[2, LFT] = 3; 
-
-connected[3, TOP] = 2; 
-connected[3, LFT] = 0; 
-
-connected[4, RGH] = 1; 
-connected[4, BOT] = 5; 
-
-connected[5, RGH] = 4; 
-connected[5, BOT] = 1; 
-connected[5, LFT] = 0; 
-
 // Read/parse inputs
 string[] mapStr = File.ReadAllLines("../map.txt");
 
@@ -44,7 +22,6 @@ Dictionary<Posi, char> map = new();
 for(int y = 0; y < maxY; y++) 
 for(int x = 0; x < maxX; x++)
 	map[new(x,y)] = mapStr[y].Length > x ? mapStr[y][x] : ' ';
-
 
 // Find faces
 Posi[] faces = new Posi[6];
@@ -113,35 +90,30 @@ bool boundsCheck(Posi curr)
 
 		// Where did we come from?
 		int currFace = faceMap[fPos];
-		int nextIndx = connected[currFace, rota];
-		Posi nextFace = faces[nextIndx]; 
 
 		// Bereken lokale positie van curr op face
 		Posi locl = new(curr.PosX%blockSize, curr.PosY%blockSize);
 
 		// Berekenen lokale positie op nextFace
-		(Posi nLcl, nRot) = ((currFace, rota) switch {
-			(0, TOP) => (new Posi(0, locl.PosX   ), RGH),
-			(0, LFT) => (new Posi(0, 49-locl.PosY), RGH),
-		
-			(1, TOP) => (new Posi(locl.PosX, 49   ), TOP), // 1->5
-			(1, RGH) => (new Posi(49, 49-locl.PosY), LFT), // 1->4
-			(1, BOT) => (new Posi(49, locl.PosX   ), LFT), // 1->2
-		
-			(2, LFT) => (new Posi(locl.PosY, 0 ), BOT), // 2->3
-			(2, RGH) => (new Posi(locl.PosY, 49), TOP), // 2->1
-		
-			(3, LFT) => (new Posi(0 , 49-locl.PosY), RGH), // 3->0
-			(3, TOP) => (new Posi(0 , locl.PosX   ), RGH), // 3->2
-			
-			(4, RGH) => (new Posi(49, 49-locl.PosY), LFT), // 4->1
-			(4, BOT) => (new Posi(49, locl.PosX   ), LFT), // 4->5
-			
-			(5, LFT) => (new Posi(locl.PosY, 0 ), BOT), // 4->1
-			(5, BOT) => (new Posi(locl.PosX, 0 ), BOT), // 4->5
-			(5, RGH) => (new Posi(locl.PosY, 49), TOP), // 4->5
+		const int TOP = 3, RGH = 0, BOT = 1, LFT = 2;
+		(int nextIndx, Posi nLcl, nRot) = ((currFace, rota) switch {
+			(0, TOP) => (5, new Posi(0, locl.PosX   ), RGH), // 0->5
+			(0, LFT) => (3, new Posi(0, 49-locl.PosY), RGH), // 0->3
+			(1, TOP) => (5, new Posi(locl.PosX, 49   ), TOP), // 1->5
+			(1, RGH) => (4, new Posi(49, 49-locl.PosY), LFT), // 1->4
+			(1, BOT) => (2, new Posi(49, locl.PosX   ), LFT), // 1->2
+			(2, LFT) => (3, new Posi(locl.PosY, 0 ), BOT), // 2->3
+			(2, RGH) => (1, new Posi(locl.PosY, 49), TOP), // 2->1
+			(3, LFT) => (0, new Posi(0 , 49-locl.PosY), RGH), // 3->0
+			(3, TOP) => (2, new Posi(0 , locl.PosX   ), RGH), // 3->2
+			(4, RGH) => (1, new Posi(49, 49-locl.PosY), LFT), // 4->1
+			(4, BOT) => (5, new Posi(49, locl.PosX   ), LFT), // 4->5
+			(5, LFT) => (0, new Posi(locl.PosY, 0 ), BOT), // 5->1
+			(5, BOT) => (1, new Posi(locl.PosX, 0 ), BOT), // 5->5
+			(5, RGH) => (4, new Posi(locl.PosY, 49), TOP), // 5->5
 		});
 		// Van local naar global
+		Posi nextFace = faces[nextIndx]; 
 		next = new(
 			nLcl.PosX + nextFace.PosX * blockSize,
 			nLcl.PosY + nextFace.PosY * blockSize

@@ -49,6 +49,7 @@ for (int i = 0; i < instr.Count; i++) {
 	if (rota < 0) rota = dir.Length-1;
 	retrace[curr] = rota;
 }
+Console.WriteLine();
 draw();
 Console.WriteLine($"Posi: {curr}, Rota: {rota}");
 Console.WriteLine((curr.PosY+1)*1000 + (curr.PosX+1)*4 + rota );

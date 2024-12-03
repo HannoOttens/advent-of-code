@@ -51,15 +51,16 @@ fn eval(state : (i32, bool), statement : Lang) -> (i32, bool) {
 fn parse(tokens : Vec<Token>) -> Vec<Lang> {
 	let mut i = 0;
 	let mut statements = Vec::new();
-	while i < tokens.len() - 6 {
-		match &tokens[i..i+6] {
+	while i < tokens.len() {
+		match &tokens[i..] {
 			[
 				Token::Mul,
 				Token::BracketOpen,
 				Token::Num(x),
 				Token::Comma,
 				Token::Num(y),
-				Token::BracketClose
+				Token::BracketClose,
+				..
 			] => {
 				statements.push(Lang::Mul(*x, *y));
 				i += 6;
@@ -68,7 +69,7 @@ fn parse(tokens : Vec<Token>) -> Vec<Lang> {
 				Token::Do,
 				Token::BracketOpen,
 				Token::BracketClose,
-				_, _, _
+				..
 			] => {
 				statements.push(Lang::Do);
 				i += 3;
@@ -77,7 +78,7 @@ fn parse(tokens : Vec<Token>) -> Vec<Lang> {
 				Token::Dont,
 				Token::BracketOpen,
 				Token::BracketClose,
-				_, _, _
+				..
 			] => {
 				statements.push(Lang::Dont);
 				i += 3;
@@ -121,22 +122,16 @@ fn tokenize_number(chars : &Vec<char>, index : &mut usize) -> i32 {
 }
 
 fn tokenize_iden(chars : &Vec<char>, index : &mut usize) -> Token {
-	// toch alleen intressant als mul(..,..), altijd meer dan 5
-	if *index+5 >= chars.len() {
-		*index += 1;
-		return Token::Corrupted;
-	}
-
-	match &chars[*index..*index+5] {
-		['m', 'u', 'l', _, _] => {
+	match &chars[*index..] {
+		['m', 'u', 'l', ..] => {
 			*index += 3;
 			Token::Mul
 		},
-		['d', 'o', 'n', '\'', 't'] => {
+		['d', 'o', 'n', '\'', 't', ..] => {
 			*index += 5;
 			Token::Dont
 		},
-		['d', 'o', _, _, _] => {
+		['d', 'o', ..] => {
 			*index += 2;
 			Token::Do
 		},

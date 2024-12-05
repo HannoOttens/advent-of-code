@@ -1,10 +1,11 @@
 extern crate shared;
 
-use std::{cmp::Ordering, collections::HashSet};
+use std::cmp::Ordering;
+
 use shared::*;
 
 const DAY : i32 = 5;
-type OrderMap = HashSet<(usize,usize)>;
+type OrderMap = [u128;100];
 
 fn main() {
 	shared::bench (run);
@@ -14,49 +15,47 @@ fn run () {
 	let input = shared::read_input(DAY);
 	let (ordering, updates) = parse_input(&input);
 	if is_part_a() {
-		println!("{}", sum_valid_mids(ordering, updates));
+		println!("{}", sum_valid_mids(&ordering, updates));
 	} else {
-		println!("{}", sum_invalid_mids(ordering, updates));
+		println!("{}", sum_invalid_mids(&ordering, updates));
 	}
 }
 
 // =============================================================================
 // vv part a
 
-fn sum_valid_mids(ordering : OrderMap, updates : Vec<Vec<usize>>) -> usize {
-	let mut totl = 0;
-	for update in updates {
-		if validate(&ordering, &update) {
-			totl += update[update.len() / 2];
-		}
-	}
-	totl
+fn sum_valid_mids(ordering : &OrderMap, updates : Vec<Vec<usize>>) -> usize {
+	updates.iter()
+		.filter(|update| validate(ordering, update))
+		.map(|update| update[update.len()/2])
+		.sum()
 }
 
+fn order_contains(ordering : &OrderMap, pair: &(usize,usize)) -> bool {
+	(ordering[pair.0] & (1 << pair.1)) > 0
+}
+
+fn validate(ordering : &OrderMap, update : &Vec<usize>) -> bool {
+	update.is_sorted_by(|a,b| order_contains(ordering, &(*a,*b)))
+}
+
+// =============================================================================
+// vv part b
+
 fn order_compare(ordering : &OrderMap, pair: &(usize,usize)) -> Ordering {
-	if ordering.contains(pair) {
+	if order_contains(ordering, pair) {
 		Ordering::Less
 	} else {
 		Ordering::Greater
 	}
 }
 
-fn validate(ordering : &OrderMap, update : &Vec<usize>) -> bool {
-	let mut ordered_update = update.clone();
-	ordered_update.sort_by(|a, b| order_compare(ordering, &(*a, *b)));
-	*update == ordered_update
-}
-
-// =============================================================================
-// vv part b
-
-fn sum_invalid_mids(ordering : OrderMap, updates : Vec<Vec<usize>>) -> usize {
+fn sum_invalid_mids(ordering : &OrderMap, updates : Vec<Vec<usize>>) -> usize {
 	let mut totl = 0;
 	for mut update in updates {
-		if !validate(&ordering, &update) {
-			update.sort_by(|a,b| order_compare(&ordering, &(*a, *b)));
-			let mid : usize = update.len() / 2;
-			totl += update[mid];
+		if !validate(ordering, &update) {
+			update.sort_by(|a,b| order_compare(ordering, &(*a, *b)));
+			totl += update[update.len() / 2];
 		}
 	}
 	totl
@@ -65,22 +64,21 @@ fn sum_invalid_mids(ordering : OrderMap, updates : Vec<Vec<usize>>) -> usize {
 // =============================================================================
 // vv parse
 
-fn parse_ordering (ordering : &str) -> (usize,usize) {
-	let parts : Vec<usize> = ordering.split('|').map(|x| x.parse::<usize>().unwrap()).collect();
-	(parts[0], parts[1])
-}
-
 fn parse_input(content : &str) -> (OrderMap, Vec<Vec<usize>>) {
-	let mut parts = content.split("\r\n\r\n");
-	let ordering = parts.next().unwrap();
-	let ordering = ordering.lines().map(parse_ordering).collect();
+	let (ordering, updates) = content.split_once("\r\n\r\n").unwrap();
+	let ordering = ordering.lines()
+		.map(|x| x.split_once('|').unwrap())
+		.map(|(l,r)| (l.parse::<usize>().unwrap(), r.parse::<usize>().unwrap()));
 
-	let updates = parts.next().unwrap();
-	let updates = updates.lines().map(|l| l.split(',').map(|x| x.parse::<usize>().unwrap()).collect()).collect();
-	(
-		ordering,
-		updates
-	)
+	let mut order_map : OrderMap = [0; 100];
+	for (l,r) in ordering {
+		order_map[l] |= 1 << r;
+	}
+
+	let updates = updates.lines()
+		.map(|l| l.split(',').map(|x| x.parse::<usize>().unwrap()).collect())
+		.collect();
+	(order_map, updates)
 }
 
 // =============================================================================
@@ -99,10 +97,9 @@ mod tests {
     #[test]
 	fn parse_test() {
 		let (ordering, updates) = parse_input(&shared::read_test_input(DAY));
-		assert_eq!(21, ordering.len());
 		assert_eq!(6, updates.len());
 
-		assert!(ordering.contains(&(53, 13)));
+		assert!(order_contains(&ordering, &(53, 13)));
 	}
 
     #[test]
@@ -120,13 +117,13 @@ mod tests {
     #[test]
 	fn test_sum_valid_mids() {
 		let (ordering, updates) = parse_input(&shared::read_test_input(DAY));
-		assert_eq!(143, sum_valid_mids(ordering, updates));
+		assert_eq!(143, sum_valid_mids(&ordering, updates));
 	}
 
     #[test]
 	fn test_sum_invalid_mids() {
 		let (ordering, updates) = parse_input(&shared::read_test_input(DAY));
-		assert_eq!(123, sum_invalid_mids(ordering, updates));
+		assert_eq!(123, sum_invalid_mids(&ordering, updates));
 	}
 
 }

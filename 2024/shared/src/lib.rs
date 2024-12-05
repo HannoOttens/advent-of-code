@@ -18,13 +18,14 @@ pub fn read_test_input(day: i32) -> String {
 
 pub fn is_part_a () -> bool {
     let args: Vec<String> = env::args().collect();
-	args.len() == 1
+	println!("{args:?}");
+	args.len() < 2 || args[1] != "b"
 }
 
 //==============================================================================
 // vv Benchmarking
 
-pub fn bench<'a> (func : impl Fn() + 'a) {
+pub fn bench(func : fn()) {
 	use std::time::Instant;
 	let now = Instant::now();
 

@@ -1,11 +1,16 @@
-use std::{cmp::Ordering, collections::HashMap};
 extern crate shared;
+
+use std::{cmp::Ordering, collections::HashSet};
 use shared::*;
 
 const DAY : i32 = 5;
-type OrderMap = HashMap<(usize,usize),bool>;
+type OrderMap = HashSet<(usize,usize)>;
 
 fn main() {
+	shared::bench (run);
+}
+
+fn run () {
 	let input = shared::read_input(DAY);
 	let (ordering, updates) = parse_input(&input);
 	if is_part_a() {
@@ -29,7 +34,7 @@ fn sum_valid_mids(ordering : OrderMap, updates : Vec<Vec<usize>>) -> usize {
 }
 
 fn order_compare(ordering : &OrderMap, pair: &(usize,usize)) -> Ordering {
-	if ordering.contains_key(pair) {
+	if ordering.contains(pair) {
 		Ordering::Less
 	} else {
 		Ordering::Greater
@@ -68,8 +73,7 @@ fn parse_ordering (ordering : &str) -> (usize,usize) {
 fn parse_input(content : &str) -> (OrderMap, Vec<Vec<usize>>) {
 	let mut parts = content.split("\r\n\r\n");
 	let ordering = parts.next().unwrap();
-	let ordering = ordering.lines().map(parse_ordering);
-	let ordering : OrderMap = ordering.map(|x| (x, true)).collect();
+	let ordering = ordering.lines().map(parse_ordering).collect();
 
 	let updates = parts.next().unwrap();
 	let updates = updates.lines().map(|l| l.split(',').map(|x| x.parse::<usize>().unwrap()).collect()).collect();
@@ -98,7 +102,7 @@ mod tests {
 		assert_eq!(21, ordering.len());
 		assert_eq!(6, updates.len());
 
-		ordering[&(53, 13)];
+		assert!(ordering.contains(&(53, 13)));
 	}
 
     #[test]

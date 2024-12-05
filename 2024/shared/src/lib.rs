@@ -22,6 +22,19 @@ pub fn is_part_a () -> bool {
 }
 
 //==============================================================================
+// vv Benchmarking
+
+pub fn bench<'a> (func : impl Fn() + 'a) {
+	use std::time::Instant;
+	let now = Instant::now();
+
+	func();
+
+    let elapsed = now.elapsed();
+    println!("Elapsed: {:.2?}", elapsed);
+}
+
+//==============================================================================
 // vv Point
 
 #[derive(Debug)]

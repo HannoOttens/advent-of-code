@@ -6,17 +6,23 @@ use std::ops::Mul;
 
 pub fn read_input(day: i32) -> String {
 	let filename = format!("../inputs/{}.txt", day);
-
 	fs::read_to_string(&filename)
 		.expect("Cannot read file.")
 }
 
+pub fn read_test_input(day: i32) -> String {
+	let filename = format!("../inputs/test_inputs/{}.txt", day);
+	fs::read_to_string(&filename)
+		.expect("Cannot read file.")
+}
 
 pub fn is_part_a () -> bool {
     let args: Vec<String> = env::args().collect();
 	args.len() == 1
 }
 
+//==============================================================================
+// vv Point
 
 #[derive(Debug)]
 #[derive(Copy)]
@@ -25,9 +31,6 @@ pub struct Point {
 	pub x: i32,
 	pub y:  i32
 }
-
-//==============================================================================
-// vv Point
 
 impl Add for Point {
 	type Output = Self;

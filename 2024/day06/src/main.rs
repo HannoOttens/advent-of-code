@@ -1,3 +1,6 @@
+use std::sync::{Arc, Mutex};
+use std::thread;
+
 extern crate shared;
 use shared::*;
 
@@ -27,24 +30,28 @@ fn set_seen(seen : &mut Vec<Vec<bool>>, p : Point) {
 	seen[p.y as usize][p.x as usize] = true;
 }
 
+fn go_next (grid : &Vec<Vec<char>>, pos : Point, dir : usize) -> (usize, Option<Point>){
+	let directions = shared::hori_and_vert();
+	let next = pos + directions[dir];
+	let chr = get_pos(grid, next);
+	match chr {
+		None      => (dir, None),
+		Some('#') => ((dir + 1) % directions.len(), Some(pos)),
+		Some(_)   => (dir, Some(next)),
+	}
+}
+
 fn start_walking(start : Point, grid : &Vec<Vec<char>>) -> usize
 {
 	let mut seen = grid.iter()
 		.map(|l| l.iter().map(|_| false).collect())
 		.collect();
-	let directions = shared::hori_and_vert();
 
 	let mut next_pos = Some(start);
 	let mut dir = 0;
 	while let Some(pos) = next_pos {
 		set_seen(&mut seen, pos);
-		let next = pos + directions[dir];
-		let chr = get_pos(grid, next);
-		match chr {
-			None      => next_pos = None,
-			Some('#') => dir = (dir + 1) % directions.len(),
-			Some(_)   => next_pos = Some(next),
-		}
+		(dir, next_pos) = go_next(grid, pos, dir)
 	}
 	seen.iter()
 		.map(|l| l.iter().filter(|b| **b).count())
@@ -71,7 +78,6 @@ fn find_loop(start : Point, grid : &Vec<Vec<char>>) -> bool
 	let mut seen = grid.iter()
 		.map(|l| l.iter().map(|_| [false,false,false,false].to_vec()).collect())
 		.collect();
-	let directions = shared::hori_and_vert();
 
 	let mut next_pos = Some(start);
 	let mut dir = 0;
@@ -80,14 +86,7 @@ fn find_loop(start : Point, grid : &Vec<Vec<char>>) -> bool
 			return true
 		}
 		set_seen_dir(&mut seen, pos, dir);
-
-		let next = pos + directions[dir];
-		let chr = get_pos(grid, next);
-		match chr {
-			None      => next_pos = None,
-			Some('#') => dir = (dir + 1) % directions.len(),
-			Some(_)   => next_pos = Some(next),
-		}
+		(dir, next_pos) = go_next(grid, pos, dir)
 	}
 	false
 }
@@ -95,26 +94,41 @@ fn find_loop(start : Point, grid : &Vec<Vec<char>>) -> bool
 fn find_all_loop(start : Point,
 	grid : &mut Vec<Vec<char>>) -> usize
 {
-	let mut totl = 0;
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
 	for y in 0..grid.len() {
-		for x in 0..grid[0].len() {
-			let p = Point::from_usize(x, y);
-			match get_pos(grid, p) {
-				Some('#') => {},
-				Some('^') => {},
-				Some(_) => {
-					set_pos(grid, p, '#');
-					if find_loop(start, grid) {
-						totl += 1;
-					}
-					set_pos(grid, p, '.');
-				},
-				_ => panic!("AAAAAAAAAAAAAAAAAAAA!")
+		let mut a_grid = grid.clone();
+        let counter = Arc::clone(&counter);
+
+		let handle = thread::spawn(move || {
+			for x in 0..a_grid[0].len() {
+				let p = Point::from_usize(x, y);
+				match get_pos(&a_grid, p) {
+					Some('#') => {},
+					Some('^') => {},
+					Some(_) => {
+						set_pos(&mut a_grid, p, '#');
+						if find_loop(start, &a_grid) {
+							let mut n = counter.lock().unwrap();
+							*n += 1;
+						}
+						set_pos(&mut a_grid, p, '.');
+					},
+					_ => panic!("AAAAAAAAAAAAAAAAAAAA!")
+				}
 			}
-		}
+
+		});
+		handles.push(handle);
 	}
-	totl
+	for handle in handles {
+		handle.join().unwrap();
+	}
+	let x = *counter.lock().unwrap();
+	x
 }
+
 
 // =============================================================================
 // vv parse

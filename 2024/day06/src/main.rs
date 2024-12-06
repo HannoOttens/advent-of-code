@@ -66,25 +66,31 @@ fn count_walked(start : Point, grid : &Vec<Vec<char>>) -> usize {
 // =============================================================================
 // vv part b
 
-fn set_seen_dir(seen : &mut Vec<Vec<Vec<bool>>>, p : Point, dir : usize) {
+fn set_seen_dir(seen : &mut Vec<Vec<[bool;4]>>, p : Point, dir : usize) {
 	seen[p.y as usize][p.x as usize][dir] = true;
 }
 
-fn has_seen_dir(seen : &Vec<Vec<Vec<bool>>>, p : Point, dir : usize) -> bool {
+fn has_seen_dir(seen : &Vec<Vec<[bool;4]>>, p : Point, dir : usize) -> bool {
 	seen[p.y as usize][p.x as usize][dir]
 }
 
+const DIR : [Point;4] = [
+	Point { x:  0, y: -1 },
+	Point { x:  1, y:  0 },
+	Point { x:  0, y:  1 },
+	Point { x: -1, y:  0 },
+];
+
 fn go_next_blockade(grid : &Vec<Vec<char>>, blockade : Point, pos : Point, dir : usize) -> (usize, Option<Point>){
-	let directions = shared::hori_and_vert();
-	let next = pos + directions[dir];
+	let next = pos + DIR[dir];
 
 	if next == blockade {
-		((dir + 1) % directions.len(), Some(pos))
+		((dir + 1) % DIR.len(), Some(pos))
 	} else {
 		let chr = get_pos(grid, next);
 		match chr {
 			None      => (dir, None),
-			Some('#') => ((dir + 1) % directions.len(), Some(pos)),
+			Some('#') => ((dir + 1) % DIR.len(), Some(pos)),
 			Some(_)   => (dir, Some(next)),
 		}
 	}
@@ -93,7 +99,7 @@ fn go_next_blockade(grid : &Vec<Vec<char>>, blockade : Point, pos : Point, dir :
 fn check_loop(start : Point, grid : &Vec<Vec<char>>, blockade : Point) -> bool
 {
 	let mut seen = grid.iter()
-		.map(|l| l.iter().map(|_| [false,false,false,false].to_vec()).collect())
+		.map(|l| l.iter().map(|_| [false,false,false,false]).collect())
 		.collect();
 
 	let mut next_pos = Some(start);

@@ -40,6 +40,7 @@ pub fn bench(func : fn()) {
 #[derive(Debug)]
 #[derive(Copy)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub struct Point {
 	pub x: i32,
 	pub y:  i32

@@ -61,10 +61,6 @@ fn start_walking(start : Point, grid : &Vec<Vec<char>>) -> usize
 // =============================================================================
 // vv part b
 
-fn set_pos(grid : &mut Vec<Vec<char>>, p : Point, chr : char){
-	grid[p.y as usize][p.x as usize] = chr;
-}
-
 fn set_seen_dir(seen : &mut Vec<Vec<Vec<bool>>>, p : Point, dir : usize) {
 	seen[p.y as usize][p.x as usize][dir] = true;
 }
@@ -73,7 +69,23 @@ fn has_seen_dir(seen : &Vec<Vec<Vec<bool>>>, p : Point, dir : usize) -> bool {
 	seen[p.y as usize][p.x as usize][dir]
 }
 
-fn find_loop(start : Point, grid : &Vec<Vec<char>>) -> bool
+fn go_next_blockade(grid : &Vec<Vec<char>>, blockade : Point, pos : Point, dir : usize) -> (usize, Option<Point>){
+	let directions = shared::hori_and_vert();
+	let next = pos + directions[dir];
+
+	if next == blockade {
+		((dir + 1) % directions.len(), Some(pos))
+	} else {
+		let chr = get_pos(grid, next);
+		match chr {
+			None      => (dir, None),
+			Some('#') => ((dir + 1) % directions.len(), Some(pos)),
+			Some(_)   => (dir, Some(next)),
+		}
+	}
+}
+
+fn find_loop(start : Point, grid : &Vec<Vec<char>>, blockade : Point) -> bool
 {
 	let mut seen = grid.iter()
 		.map(|l| l.iter().map(|_| [false,false,false,false].to_vec()).collect())
@@ -86,45 +98,41 @@ fn find_loop(start : Point, grid : &Vec<Vec<char>>) -> bool
 			return true
 		}
 		set_seen_dir(&mut seen, pos, dir);
-		(dir, next_pos) = go_next(grid, pos, dir)
+		(dir, next_pos) = go_next_blockade(grid, blockade, pos, dir)
 	}
 	false
 }
 
 fn find_all_loop(start : Point,
-	grid : &mut Vec<Vec<char>>) -> usize
+	grid : &Vec<Vec<char>>) -> usize
 {
     let counter = Arc::new(Mutex::new(0));
     let mut handles = vec![];
 
-	for y in 0..grid.len() {
-		let mut a_grid = grid.clone();
-        let counter = Arc::clone(&counter);
+	let handle = thread::scope(|s| {
+		for y in 0..grid.len() {
+			let counter = Arc::clone(&counter);
+			let y_ref = y;
 
-		let handle = thread::spawn(move || {
-			for x in 0..a_grid[0].len() {
-				let p = Point::from_usize(x, y);
-				match get_pos(&a_grid, p) {
-					Some('#') => {},
-					Some('^') => {},
-					Some(_) => {
-						set_pos(&mut a_grid, p, '#');
-						if find_loop(start, &a_grid) {
-							let mut n = counter.lock().unwrap();
-							*n += 1;
-						}
-						set_pos(&mut a_grid, p, '.');
-					},
-					_ => panic!("AAAAAAAAAAAAAAAAAAAA!")
+			s.spawn(move || {
+				for x in 0..grid[0].len() {
+					let p = Point::from_usize(x, y_ref);
+					match get_pos(grid, p) {
+						Some('#') => {},
+						Some('^') => {},
+						Some(_) => {
+							if find_loop(start, grid, p) {
+								let mut n = counter.lock().unwrap();
+								*n += 1;
+							}
+						},
+						_ => panic!("AAAAAAAAAAAAAAAAAAAA!")
+					}
 				}
-			}
-
-		});
-		handles.push(handle);
-	}
-	for handle in handles {
-		handle.join().unwrap();
-	}
+			});
+		}
+	});
+	handles.push(handle);
 	let x = *counter.lock().unwrap();
 	x
 }

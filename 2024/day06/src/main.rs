@@ -13,7 +13,7 @@ fn main() {
 fn run () {
 	let (p,  mut grid) = parse_input(shared::read_input(DAY));
 	if is_part_a() {
-		println!("{}", start_walking(p, &grid));
+		println!("{}", count_walked(p, &grid));
 	} else {
 		println!("{}", find_all_loop(p, &mut grid));
 	}
@@ -41,7 +41,7 @@ fn go_next (grid : &Vec<Vec<char>>, pos : Point, dir : usize) -> (usize, Option<
 	}
 }
 
-fn start_walking(start : Point, grid : &Vec<Vec<char>>) -> usize
+fn start_walking(start : Point, grid : &Vec<Vec<char>>) -> Vec<Vec<bool>>
 {
 	let mut seen = grid.iter()
 		.map(|l| l.iter().map(|_| false).collect())
@@ -53,6 +53,11 @@ fn start_walking(start : Point, grid : &Vec<Vec<char>>) -> usize
 		set_seen(&mut seen, pos);
 		(dir, next_pos) = go_next(grid, pos, dir)
 	}
+	seen
+}
+
+fn count_walked(start : Point, grid : &Vec<Vec<char>>) -> usize {
+	let seen = start_walking(start, grid);
 	seen.iter()
 		.map(|l| l.iter().filter(|b| **b).count())
 		.sum()
@@ -85,7 +90,7 @@ fn go_next_blockade(grid : &Vec<Vec<char>>, blockade : Point, pos : Point, dir :
 	}
 }
 
-fn find_loop(start : Point, grid : &Vec<Vec<char>>, blockade : Point) -> bool
+fn check_loop(start : Point, grid : &Vec<Vec<char>>, blockade : Point) -> bool
 {
 	let mut seen = grid.iter()
 		.map(|l| l.iter().map(|_| [false,false,false,false].to_vec()).collect())
@@ -106,33 +111,37 @@ fn find_loop(start : Point, grid : &Vec<Vec<char>>, blockade : Point) -> bool
 fn find_all_loop(start : Point,
 	grid : &Vec<Vec<char>>) -> usize
 {
-    let counter = Arc::new(Mutex::new(0));
-    let mut handles = vec![];
+	// Alleen blockade plaatsen waar we standaard lopen
+	let seen = start_walking(start, grid);
+	let seen_ref = &seen;
 
-	let handle = thread::scope(|s| {
+	// Multithreaded zoeken
+    let counter = Arc::new(Mutex::new(0));
+	thread::scope(|s| {
 		for y in 0..grid.len() {
 			let counter = Arc::clone(&counter);
 			let y_ref = y;
 
 			s.spawn(move || {
 				for x in 0..grid[0].len() {
-					let p = Point::from_usize(x, y_ref);
-					match get_pos(grid, p) {
-						Some('#') => {},
-						Some('^') => {},
-						Some(_) => {
-							if find_loop(start, grid, p) {
-								let mut n = counter.lock().unwrap();
-								*n += 1;
-							}
-						},
-						_ => panic!("AAAAAAAAAAAAAAAAAAAA!")
+					if seen_ref[y][x] {
+						let blockade = Point::from_usize(x, y_ref);
+						match get_pos(grid, blockade) {
+							Some('#') => {},
+							Some('^') => {},
+							Some(_) => {
+								if check_loop(start, grid, blockade) {
+									let mut n = counter.lock().unwrap();
+									*n += 1;
+								}
+							},
+							_ => panic!("AAAAAAAAAAAAAAAAAAAA!")
+						}
 					}
 				}
 			});
 		}
 	});
-	handles.push(handle);
 	let x = *counter.lock().unwrap();
 	x
 }
@@ -178,7 +187,7 @@ mod tests {
 	#[test]
 	fn test_walk() {
 		let (p,  grid) = parse_input(shared::read_test_input(DAY));
-		assert_eq!(41, start_walking(p, &grid));
+		assert_eq!(41, count_walked(p, &grid));
 	}
 
 	#[test]

@@ -25,6 +25,7 @@ fn run () {
 // vv part a
 
 fn sum_valid_mids(ordering : &OrderMap, updates : Vec<Vec<usize>>) -> usize {
+
 	updates.iter()
 		.filter(|update| validate(ordering, update))
 		.map(|update| update[update.len()/2])
@@ -54,7 +55,7 @@ fn sum_invalid_mids(ordering : &OrderMap, updates : Vec<Vec<usize>>) -> usize {
 	let mut totl = 0;
 	for mut update in updates {
 		if !validate(ordering, &update) {
-			update.sort_by(|a,b| order_compare(ordering, &(*a, *b)));
+			update.sort_unstable_by(|a,b| order_compare(ordering, &(*a, *b)));
 			totl += update[update.len() / 2];
 		}
 	}

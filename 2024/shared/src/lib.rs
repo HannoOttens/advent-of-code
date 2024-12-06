@@ -18,7 +18,6 @@ pub fn read_test_input(day: i32) -> String {
 
 pub fn is_part_a () -> bool {
     let args: Vec<String> = env::args().collect();
-	println!("{args:?}");
 	args.len() < 2 || args[1] != "b"
 }
 
@@ -44,6 +43,12 @@ pub fn bench(func : fn()) {
 pub struct Point {
 	pub x: i32,
 	pub y:  i32
+}
+
+impl Point {
+	pub fn from_usize(x:usize, y: usize) -> Point {
+		Point{x : x as i32, y: y as i32}
+	}
 }
 
 impl Add for Point {
@@ -87,6 +92,16 @@ pub fn diagonals() -> [Point; 4] {
 		Point { x:  1, y: -1 },
 		Point { x:  1, y:  1 },
 		Point { x: -1, y: -1 },
+	]
+}
+
+// let op: clockwise
+pub fn hori_and_vert() -> [Point; 4] {
+	[
+		Point { x:  0, y: -1 },
+		Point { x:  1, y:  0 },
+		Point { x:  0, y:  1 },
+		Point { x: -1, y:  0 },
 	]
 }
 

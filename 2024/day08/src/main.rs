@@ -69,7 +69,7 @@ fn find_antinodes(map : &SatMap, width : i32, height : i32) -> usize {
 // =============================================================================
 // vv part b
 
-fn find_antinodes(map : &SatMap, width : i32, height : i32) -> usize {
+fn find_resonant_antinodes(map : &SatMap, width : i32, height : i32) -> usize {
 	let mut seen = [[false; 50]; 50];
 
 	for (_, posns) in map {

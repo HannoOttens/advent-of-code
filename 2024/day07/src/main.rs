@@ -23,7 +23,7 @@ fn run () {
 fn exec_equa(equa : &Equa, muls : u64) -> u64 {
 	let mut totl = equa.1[0];
 	for i in 1..equa.1.len() {
-		if (muls & (1 << i)) == 0 {
+		if (muls & (1 << (i-1))) == 0 {
 			totl *= equa.1[i];
 		} else {
 			totl += equa.1[i];
@@ -33,12 +33,10 @@ fn exec_equa(equa : &Equa, muls : u64) -> u64 {
 }
 
 fn validate_equa(equa : &Equa) -> bool {
-	let mut muls = 0;
-	while muls < (1 << equa.1.len()) {
+	for muls in 0..(1 << equa.1.len()-1) {
 		if equa.0 == exec_equa(equa, muls) {
 			return true
 		}
-		muls += 1;
 	}
 	false
 }
@@ -77,18 +75,14 @@ fn exec_concat_equa(equa : &Equa, muls : u64, concats : u64) -> u64 {
 }
 
 fn validate_concat_equa(equa : &Equa) -> bool {
-	let mut muls = 0;
-	while muls < (1 << equa.1.len()-1) {
-		let mut concats = 0;
-		while concats < (1 << equa.1.len()-1) {
+	for muls in 0..(1 << equa.1.len()-1) {
+		for concats in 0..(1 << equa.1.len()-1) {
 			if (muls & concats == 0)
 				&& (equa.0 == exec_concat_equa(equa, muls, concats))
 			{
 				return true
 			}
-			concats += 1;
 		}
-		muls += 1;
 	}
 	false
 }

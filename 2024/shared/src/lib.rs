@@ -1,8 +1,7 @@
 
 use std::fs;
 use std::env;
-use std::ops::Add;
-use std::ops::Mul;
+use std::ops::{Add, Mul, Sub};
 
 pub fn read_input(day: i32) -> String {
 	let filename = format!("../inputs/{}.txt", day);
@@ -58,6 +57,16 @@ impl Add for Point {
 		Point {
 			x: self.x + other.x,
 			y: self.y + other.y,
+		}
+	}
+}
+
+impl Sub for Point {
+	type Output = Self;
+	fn sub(self, other : Self) -> Self {
+		Point {
+			x: self.x - other.x,
+			y: self.y - other.y,
 		}
 	}
 }

@@ -15,6 +15,12 @@ pub fn read_test_input(day: i32) -> String {
 		.expect("Cannot read file.")
 }
 
+pub fn read_test_input_n(day: i32, n: i32) -> String {
+	let filename = format!("../inputs/test_inputs/{}_{}.txt", day, n);
+	fs::read_to_string(&filename)
+		.expect("Cannot read file.")
+}
+
 pub fn is_part_a () -> bool {
     let args: Vec<String> = env::args().collect();
 	args.len() < 2 || args[1] != "b"
@@ -132,11 +138,11 @@ mod tests {
 
 	#[test]
 	fn test_bound () {
-		assert!( check_bound(Point{x:  1, y: 10}, 0, 0, 10, 10));
+		assert!( check_bound(Point{x:  1, y:  9}, 0, 0, 10, 10));
 		assert!(!check_bound(Point{x:  1, y: 11}, 0, 0, 10, 10));
 		assert!(!check_bound(Point{x:  1, y: -1}, 0, 0, 10, 10));
 
-		assert!( check_bound(Point{x: 10, y:  0}, 0, 0, 10, 10));
+		assert!( check_bound(Point{x:  9, y:  0}, 0, 0, 10, 10));
 		assert!(!check_bound(Point{x: 11, y:  0}, 0, 0, 10, 10));
 		assert!(!check_bound(Point{x: -1, y:  0}, 0, 0, 10, 10));
 	}

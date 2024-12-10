@@ -89,15 +89,20 @@ fn mem_remove(memory : &mut Mem, iden : i32) {
 	memory[index].0 = -1;
 }
 
-fn mem_check_free(memory : &Mem, size : i32) -> Option<usize> {
-	memory.iter()
-		.position(|(i,s)| (*i == -1) && (*s >= size))
-}
-
 fn mem_find(memory : &Mem, iden : i32) -> usize {
 	memory.iter()
 		.position(|(i,_)| (*i == iden))
 		.unwrap()
+}
+
+fn mem_check_free(memory : &Mem, iden : i32, size : i32) -> Option<usize> {
+	let free = memory.iter()
+		.position(|(i,s)| (*i == -1) && (*s >= size))?;
+	if free < mem_find(memory, iden) {
+		Some(free) // Positie is voor huidige positie van file
+	} else {
+		None // Positie na, niet verplaatsen
+	}
 }
 
 fn mem_insert(memory : &mut Mem, index : usize, iden : i32, size : i32) {
@@ -116,11 +121,9 @@ fn arrange_memory_nofrag(memory : Mem) -> Mem {
 							.filter(|(i,_)| *i != -1)
 							.rev()
 	{
-		let curr_index = mem_find(&new_mem, iden);
-		let index = mem_check_free(&new_mem, size);
-		if index.is_some() && curr_index > index.unwrap() {
+		if let Some(index) = mem_check_free(&new_mem, iden, size) {
 			mem_remove(&mut new_mem, iden);
-			mem_insert(&mut new_mem, index.unwrap(), iden, size);
+			mem_insert(&mut new_mem, index, iden, size);
 		}
 	}
 	new_mem

@@ -21,9 +21,30 @@ pub fn read_test_input_n(day: i32, n: i32) -> String {
 		.expect("Cannot read file.")
 }
 
+pub fn read_challenge_input(day: i32, n: i32) -> String {
+	let filename = format!("../inputs/challenge/{}_{}.txt", day, n);
+	fs::read_to_string(&filename)
+		.expect("Cannot read file.")
+}
+
 pub fn is_part_a () -> bool {
     let args: Vec<String> = env::args().collect();
-	args.len() < 2 || args[1] != "b"
+	args.len() < 2 || args[1] == "a"
+}
+
+pub fn is_part_b () -> bool {
+    let args: Vec<String> = env::args().collect();
+	args.len() == 2 && args[1] == "b"
+}
+
+pub fn is_challenge_a () -> bool {
+    let args: Vec<String> = env::args().collect();
+	args.len() == 2 && args[1] == "ca"
+}
+
+pub fn is_challenge_b () -> bool {
+    let args: Vec<String> = env::args().collect();
+	args.len() == 2 && args[1] == "cb"
 }
 
 //==============================================================================

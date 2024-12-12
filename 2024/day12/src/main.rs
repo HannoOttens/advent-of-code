@@ -26,12 +26,29 @@ fn main() {
 }
 
 fn run () {
-	let content = shared::read_input(DAY);
-	let grid = parse_input(content);
 	if shared::is_part_a() {
-		println!("{:?}", find_farm_perim_costs(grid));
-	} else {
-		println!("{:?}", find_farm_sides_costs(grid));
+		let content = shared::read_input(DAY);
+		let grid = parse_input(content);
+		println!("{:?}", find_farm_perim_costs(&grid));
+	} else if shared::is_part_b() {
+		let content = shared::read_input(DAY);
+		let grid = parse_input(content);
+		println!("{:?}", find_farm_sides_costs(&grid));
+	} else if shared::is_challenge_a() {
+		let content = shared::read_challenge_input(DAY, 0);
+		let grid = parse_input(content);
+		println!("Challenge A");
+		println!("Input size: {:?}", grid.len());
+		println!("Perimiter: {:?}", find_farm_perim_costs(&grid));
+		println!("Sides: {:?}", find_farm_sides_costs(&grid));
+	}
+	else if shared::is_challenge_b() {
+		let content = shared::read_challenge_input(DAY, 1);
+		let grid = parse_input(content);
+		println!("Challenge B");
+		println!("Input size: {:?}", grid.len());
+		println!("Perimiter: {:?}", find_farm_perim_costs(&grid));
+		println!("Sides: {:?}", find_farm_sides_costs(&grid));
 	}
 }
 
@@ -86,7 +103,7 @@ fn farm_cost(seen : &mut Seen, grid : &Grid, x : usize, y : usize) -> usize {
 	perim * area
 }
 
-fn find_farm_perim_costs(grid : Grid) -> usize {
+fn find_farm_perim_costs(grid : &Grid) -> usize {
 	let mut seen = new_seen(&grid);
 	let mut totl = 0;
 	for (y, line) in grid.iter().enumerate() {
@@ -169,13 +186,13 @@ fn farm_cost_sides(seen : &mut Seen, grid : &Grid, x : usize, y : usize) -> usiz
 	corners * area
 }
 
-fn find_farm_sides_costs(grid : Grid) -> usize {
+fn find_farm_sides_costs(grid : &Grid) -> usize {
 	let mut seen = new_seen(&grid);
 	let mut totl = 0;
 	for (y, line) in grid.iter().enumerate() {
 		for (x, _) in line.iter().enumerate() {
 			if !get_seen(&seen, &Point::from_usize(x,y)) {
-				totl += farm_cost_sides(&mut seen, &grid, x, y);
+				totl += farm_cost_sides(&mut seen, grid, x, y);
 			}
 		}
 	}

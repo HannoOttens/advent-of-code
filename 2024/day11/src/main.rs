@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 extern crate shared;
 const DAY : i32 = 11;
-type Stones = Vec<u32>;
-type Mem = HashMap<(u32, u32), u64>;
+type Stones = Vec<u64>;
+type Mem = HashMap<(u32, u64), u64>;
 
 fn main() {
 	shared::bench (run);
@@ -22,42 +22,43 @@ fn run () {
 // =============================================================================
 // vv part a/b
 
-fn count_digits(stone : u32) -> u32 {
-	if stone < 10           { return 1; }
-	if stone < 100          { return 2; }
-	if stone < 1000         { return 3; }
-	if stone < 10000        { return 4; }
-	if stone < 100000       { return 5; }
-	if stone < 1000000      { return 6; }
-	if stone < 10000000     { return 7; }
-	if stone < 100000000    { return 8; }
-	if stone < 1000000000   { return 9; }
-	10
+fn count_digits(mut stone : u64) -> u64 {
+	let mut digits = 0;
+	while stone > 0 {
+		digits += 1;
+		stone /= 10;
+	}
+	digits
 }
 
-fn split_stone(digits : u32, stone : u32) -> (u32, u32) {
-	let power = 10u32.pow(digits as u32 / 2);
-	(stone / power, stone % power)
+fn split_stone(mut stone : u64) -> (u64, u64) {
+	let digs = count_digits(stone);
+	let mut p1 = 0;
+	let mut indx = 0;
+	while indx * 2 < digs {
+		p1 += (stone % 10) * 10u64.pow(indx as u32);
+		stone /= 10;
+		indx += 1
+	}
+	(stone, p1)
 }
 
-fn blink(mem : &mut Mem, blinks : u32, stone : u32) -> u64 {
-	if blinks == 0 { return 1; }
-
-	if let Some(totl) = mem.get(&(blinks, stone)) {
-		return *totl;
+fn blink(mem : &mut Mem, blinks : u32, stone : u64) -> u64 {
+	if blinks == 0 {
+		return 1;
+	}
+	if mem.contains_key(&(blinks, stone)) {
+		return mem[&(blinks, stone)];
 	}
 
 	let total;
 	if stone == 0 {
 		total = blink(mem, blinks-1, 1);
+	} else if (count_digits(stone) & 1) == 0 {
+		let (p1, p2) = split_stone(stone);
+		total = blink(mem, blinks-1, p1) + blink(mem, blinks-1, p2);
 	} else {
-		let digits = count_digits(stone);
-		if (digits & 1) == 0 {
-			let (p1, p2) = split_stone(digits, stone);
-			total = blink(mem, blinks-1, p1) + blink(mem, blinks-1, p2);
-		} else {
-			total = blink(mem, blinks-1, stone * 2024);
-		}
+		total = blink(mem, blinks-1, stone * 2024);
 	}
 
 	mem.insert((blinks, stone), total);

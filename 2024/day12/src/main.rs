@@ -226,7 +226,7 @@ mod tests {
 	fn test_input_a_0() {
 		let input = shared::read_test_input_n(DAY, 0);
 		let grid = parse_input(input);
-		let totl = find_farm_perim_costs(grid);
+		let totl = find_farm_perim_costs(&grid);
 		assert_eq!(totl, 140);
 	}
 
@@ -234,7 +234,7 @@ mod tests {
 	fn test_input_a_1() {
 		let input = shared::read_test_input_n(DAY, 1);
 		let grid = parse_input(input);
-		let totl = find_farm_perim_costs(grid);
+		let totl = find_farm_perim_costs(&grid);
 		assert_eq!(totl, 772);
 	}
 
@@ -242,7 +242,7 @@ mod tests {
 	fn test_input_a_2() {
 		let input = shared::read_test_input_n(DAY, 2);
 		let grid = parse_input(input);
-		let totl = find_farm_perim_costs(grid);
+		let totl = find_farm_perim_costs(&grid);
 		assert_eq!(totl, 1930);
 	}
 
@@ -250,7 +250,7 @@ mod tests {
 	fn test_input_b_0() {
 		let input = shared::read_test_input_n(DAY, 0);
 		let grid = parse_input(input);
-		let totl = find_farm_sides_costs(grid);
+		let totl = find_farm_sides_costs(&grid);
 		assert_eq!(totl, 80);
 	}
 
@@ -258,7 +258,7 @@ mod tests {
 	fn test_input_b_1() {
 		let input = shared::read_test_input_n(DAY, 1);
 		let grid = parse_input(input);
-		let totl = find_farm_sides_costs(grid);
+		let totl = find_farm_sides_costs(&grid);
 		assert_eq!(totl, 436);
 	}
 
@@ -266,7 +266,7 @@ mod tests {
 	fn test_input_b_2() {
 		let input = shared::read_test_input_n(DAY, 2);
 		let grid = parse_input(input);
-		let totl = find_farm_sides_costs(grid);
+		let totl = find_farm_sides_costs(&grid);
 		assert_eq!(totl, 1206);
 	}
 }

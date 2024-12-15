@@ -1,7 +1,7 @@
 
 use std::fs;
 use std::env;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Mul, Sub, Div, Rem};
 
 pub fn read_input(day: i32) -> String {
 	let filename = format!("../inputs/{}.txt", day);
@@ -76,6 +76,13 @@ impl Point {
 	pub fn from_usize(x:usize, y: usize) -> Point {
 		Point{x : x as i32, y: y as i32}
 	}
+
+	pub fn zero() -> Point {
+		Point {
+			x : 0,
+			y : 0,
+		}
+	}
 }
 
 impl Add for Point {
@@ -104,6 +111,26 @@ impl Mul<i32> for Point {
 		Point {
 			x: self.x * (other as i32),
 			y: self.y * (other as i32),
+		}
+	}
+}
+
+impl Div for Point {
+	type Output = Self;
+	fn div(self, other : Self) -> Self {
+		Point {
+			x: self.x / other.x,
+			y: self.y / other.y,
+		}
+	}
+}
+
+impl Rem for Point {
+	type Output = Self;
+	fn rem(self, other : Self) -> Self {
+		Point {
+			x: self.x % other.x,
+			y: self.y % other.y,
 		}
 	}
 }
@@ -149,6 +176,109 @@ pub fn check_bound(point: Point, min_x : i32, min_y : i32, max_x : i32, max_y : 
 	&& point.y >= min_y
 	&& point.y <  max_y
 }
+
+
+//==============================================================================
+// vv Point
+
+#[derive(Debug)]
+#[derive(Copy)]
+#[derive(Clone)]
+#[derive(PartialEq)]
+pub struct Point64 {
+	pub x: i64,
+	pub y:  i64
+}
+
+impl Point64 {
+	pub fn from_usize(x:usize, y: usize) -> Point64 {
+		Point64{x : x as i64, y: y as i64}
+	}
+
+	pub fn zero() -> Point64 {
+		Point64 {
+			x : 0,
+			y : 0,
+		}
+	}
+}
+
+impl Add for Point64 {
+	type Output = Self;
+	fn add(self, other : Self) -> Self {
+		Point64 {
+			x: self.x + other.x,
+			y: self.y + other.y,
+		}
+	}
+}
+
+impl Sub for Point64 {
+	type Output = Self;
+	fn sub(self, other : Self) -> Self {
+		Point64 {
+			x: self.x - other.x,
+			y: self.y - other.y,
+		}
+	}
+}
+
+impl Mul<i64> for Point64 {
+	type Output = Self;
+	fn mul(self, other : i64) -> Self {
+		Point64 {
+			x: self.x * (other as i64),
+			y: self.y * (other as i64),
+		}
+	}
+}
+
+impl Div for Point64 {
+	type Output = Self;
+	fn div(self, other : Self) -> Self {
+		Point64 {
+			x: self.x / other.x,
+			y: self.y / other.y,
+		}
+	}
+}
+
+impl Rem for Point64 {
+	type Output = Self;
+	fn rem(self, other : Self) -> Self {
+		Point64 {
+			x: self.x % other.x,
+			y: self.y % other.y,
+		}
+	}
+}
+
+//==============================================================================
+// vv number stuff
+
+pub fn gcd(mut n : i64, mut m : i64) -> i64 {
+	while m != 0 {
+		if m < n {
+			std::mem::swap(&mut m, &mut n);
+		}
+		m %= n;
+	}
+	n
+}
+
+pub fn lcm(a : i64, b : i64) -> i64 {
+    return a*(b/gcd(a,b));
+}
+
+//==============================================================================
+// vv print
+
+pub fn print_char_grid(grid : &Vec<Vec<char>>) {
+	for y in 0..grid.len() {
+		println!("{}", &grid[y].iter().collect::<String>());
+	}
+}
+
 
 //==============================================================================
 // vv tests

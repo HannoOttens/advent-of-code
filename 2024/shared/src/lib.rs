@@ -63,10 +63,7 @@ pub fn bench(func : fn()) {
 //==============================================================================
 // vv Point
 
-#[derive(Debug)]
-#[derive(Copy)]
-#[derive(Clone)]
-#[derive(PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Point {
 	pub x: i32,
 	pub y:  i32
@@ -271,6 +268,48 @@ pub fn lcm(a : i64, b : i64) -> i64 {
 }
 
 //==============================================================================
+// vv grid stuff
+
+pub fn find_char(grid : &Vec<Vec<char>>, chr : char) -> Point {
+	for y in 0..grid.len() {
+		for x in 0..grid[0].len() {
+			if grid[y][x] == chr {
+				return Point::from_usize(x,y);
+			}
+		}
+	}
+	panic!("No '{chr}' found!");
+}
+
+pub fn new_seen(grid : &Vec<Vec<char>>) -> Vec<Vec<bool>> {
+	grid.iter()
+		.map(|l| l.iter().map(|_| false).collect())
+		.collect()
+}
+
+pub fn set_seen(seen : &mut Vec<Vec<bool>>, p : Point) {
+	seen[p.y as usize][p.x as usize] = true;
+}
+
+pub fn get_seen(seen : &Vec<Vec<bool>>, p : &Point) -> bool {
+	seen[p.y as usize][p.x as usize]
+}
+
+pub fn set_seen_dir(seen : &mut Vec<Vec<[bool;4]>>, p : Point, dir : usize) {
+	seen[p.y as usize][p.x as usize][dir] = true;
+}
+
+pub fn get_seen_dir(seen : &Vec<Vec<[bool;4]>>, p : Point, dir : usize) -> bool {
+	seen[p.y as usize][p.x as usize][dir]
+}
+
+pub fn new_seen_dir(grid : &Vec<Vec<char>>) -> Vec<Vec<[bool;4]>> {
+	grid.iter()
+		.map(|l| l.iter().map(|_| [false,false,false,false]).collect())
+		.collect()
+}
+
+//==============================================================================
 // vv print
 
 pub fn print_char_grid(grid : &Vec<Vec<char>>) {
@@ -278,7 +317,6 @@ pub fn print_char_grid(grid : &Vec<Vec<char>>) {
 		println!("{}", &grid[y].iter().collect::<String>());
 	}
 }
-
 
 //==============================================================================
 // vv tests

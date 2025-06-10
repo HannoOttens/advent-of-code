@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 extern crate shared;
 
 const DAY : i32 = 21;
@@ -11,13 +12,13 @@ fn run() {
 	let options = parse_input(content);
 	if shared::is_part_a() {
 		let total = options.iter()
-			.map(|(i, code)| i * keypad_movement(code, 0))
-			.sum::<usize>();
+			.map(|(i, code)| (*i as u64) * keypad_movement(code, 2))
+			.sum::<u64>();
 		println!("{:?}", total);
 	} else if shared::is_part_b() {
 		let total = options.iter()
-			.map(|(i, code)| i * keypad_movement(code, 25))
-			.sum::<usize>();
+			.map(|(i, code)| (*i as u64) * keypad_movement(code, 25))
+			.sum::<u64>();
 		println!("{:?}", total);
 	}
 }
@@ -44,7 +45,7 @@ fn manhat(from : i32, to : i32) -> usize {
 	((to_x - from_x).abs() + (to_y - from_y).abs()) as usize
 }
 
-fn _find_path(pad : &str, from : i32, to : i32, max_l : usize, seen : usize, turned : bool, path : &str) -> Vec<String> {
+fn _find_path(pad : &str, from : i32, to : i32, max_l : usize, seen : usize, path : &str) -> Vec<String> {
 	// Lege plek? Stoppen
 	let cur_char = pad.chars().nth(from as usize).unwrap();
 	if cur_char == ' ' { return vec!(); }
@@ -52,16 +53,6 @@ fn _find_path(pad : &str, from : i32, to : i32, max_l : usize, seen : usize, tur
 	if seen & (1 << from) > 0 { return vec!(); }
 	// Langer dan manhattan distance? Stoppen
 	if path.len() > max_l { return vec!(); }
-	// Twee keer draaien? Stoppen
-	let mut turn = false;
-	if path.len() > 1
-	{
-		let prv1 = path.chars().nth(path.len() - 1);
-		let prv2 = path.chars().nth(path.len() - 2);
-		turn = prv1 != prv2;
-		if turn && turned { return vec!(); }
-	}
-	let turned = turned | turn;
 
 	// Markeren als gezien
 	let seen = seen | (1 << from);
@@ -72,24 +63,24 @@ fn _find_path(pad : &str, from : i32, to : i32, max_l : usize, seen : usize, tur
 		let mut paths = vec!();
 		if from + 3 < (pad.chars().count() as i32)
 		{
-			paths.push(_find_path(pad, from+3, to, max_l, seen, turned, &extn_path(path, 'v')));
+			paths.push(_find_path(pad, from+3, to, max_l, seen, &extn_path(path, 'v')));
 		}
 		if from - 3 >= 0
 		{
-			paths.push(_find_path(pad, from - 3, to, max_l, seen, turned, &extn_path(path, '^')));
+			paths.push(_find_path(pad, from - 3, to, max_l, seen, &extn_path(path, '^')));
 		}
 		if from == 0 || from == 1
 		|| from == 3 || from == 4
 		|| from == 6 || from == 7
 		|| from == 9 || from == 10
 		{
-			paths.push(_find_path(pad, from + 1, to, max_l, seen, turned, &extn_path(path, '>')));
+			paths.push(_find_path(pad, from + 1, to, max_l, seen, &extn_path(path, '>')));
 		}
 		if from == 2  || from == 1
 		|| from == 5  || from == 4
 		|| from == 8  || from == 7
 		|| from == 11 || from == 10 {
-			paths.push(_find_path(pad, from - 1, to, max_l, seen, turned, &extn_path(path, '<')));
+			paths.push(_find_path(pad, from - 1, to, max_l, seen, &extn_path(path, '<')));
 		}
 		return paths.into_iter().flatten().collect();
 	}
@@ -98,63 +89,51 @@ fn _find_path(pad : &str, from : i32, to : i32, max_l : usize, seen : usize, tur
 fn find_path(pad : &str, from : char, to : char) -> Vec<String> {
 	let from = pad.find(from).unwrap() as i32;
 	let to   = pad.find(to  ).unwrap() as i32;
-	_find_path(pad, from, to, manhat(from, to), 0, false, &"")
+	_find_path(pad, from, to, manhat(from, to), 0, &"")
 }
 
+fn move_time(
+	mem : &mut HashMap<(char, char, usize), u64>,
+	from : char,
+	to : char,
+	robots : usize,
+	frst : bool) -> u64
+{
+	let m = mem.get(&(from, to, robots));
+	if m.is_some() { return *m.unwrap() }
 
-fn make_paths(sub_paths : &[Vec<String>], path : String) -> Vec<String> {
-	if sub_paths.len() == 0
-	{
-		return vec!(path);
-	}
-	else
-	{
-		let mut sb = vec!();
-		for sub_path in sub_paths.get(0).unwrap() {
-			let new_p = path.clone() + &sub_path;
-			sb.push(make_paths(&sub_paths[1..], new_p));
-		}
-		return sb.into_iter().flatten().collect()
-	}
+	let paths;
+	if frst { paths = find_path(NUM_PAD, from, to) }
+	else	{ paths = find_path(ARR_PAD, from, to) }
+
+	if robots == 0 { return paths.iter().map(|p| p.len()).min().unwrap() as u64; }
+
+	let min_time = paths
+		.into_iter()
+		.map(|path| {
+			let z = String::from("A") + &path;
+			z.chars().zip(path.chars())
+					 .map(|(from, to)| move_time(mem, from, to, robots-1, false))
+					 .sum()
+		})
+		.min().unwrap();
+	mem.insert((from, to, robots), min_time);
+	min_time
 }
 
-fn keypad_movement(code : &str, robots : usize) -> usize {
-	println!("Code: {}", code);
-	let mut codes = vec!(code.to_string());
+fn keypad_movement(code : &str, robots : usize) -> u64 {
+	let mut mem = HashMap::new();
 
-	for robot in 0..robots+1 {
-		let mut new_codes = vec!();
-		for code in &codes {
-			let mut sub_paths = vec!();
-			for i in 0..code.chars().count() {
-				let to = code.chars().nth(i).unwrap();
-				let mut from = 'A';
-				if i > 0
-				{
-					from = code.chars().nth(i-1).unwrap();
-				}
-
-				if robot == 0 {
-					sub_paths.push(find_path(NUM_PAD, from, to));
-				} else {
-					sub_paths.push(find_path(ARR_PAD, from, to));
-				}
-			}
-			new_codes.push(make_paths(&sub_paths, "".to_string()));
-		}
-
-		codes = new_codes.into_iter().flatten().collect();
-		let num_codes = codes.len();
-		let shortest = codes.iter().map(|s| s.len()).min().unwrap();
-		codes = codes.into_iter().filter(|s| s.len() == shortest).collect();
-		let fltr_codes = codes.len();
-
-		println!("Diff: {:?}", codes);
+	// sub paths van eerste niveau
+	let mut totl_time = 0;
+	for i in 0..code.chars().count() {
+		let to = code.chars().nth(i).unwrap();
+		let mut from = 'A';
+		if i > 0 { from = code.chars().nth(i-1).unwrap(); }
+		totl_time += move_time(&mut mem, from, to, robots, true);
 	}
 
-
-	println!("Shortest: {}", codes[0].len());
-	codes.iter().map(|s| s.len()).min().unwrap()
+	totl_time
 }
 
 // =============================================================================

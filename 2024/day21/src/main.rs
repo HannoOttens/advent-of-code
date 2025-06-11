@@ -1,4 +1,4 @@
-use std::collections::{hash_map, HashMap};
+use std::collections::HashMap;
 extern crate shared;
 
 const DAY : i32 = 21;
@@ -111,26 +111,26 @@ fn move_time(
 	from : char,
 	to : char,
 	robots : usize,
-	frst : bool) -> u64
+	numpad : bool) -> u64
 {
 	if robots == 0
 	{
-		let paths = path_mem.get(&(frst, from, to)).unwrap();
-		let shortest = paths.iter().map(|p| p.len()).min().unwrap();
-		return shortest as u64;
+		return 1 + manhat(ARR_PAD.find(from).unwrap() as i32
+						, ARR_PAD.find(to  ).unwrap() as i32) as u64;
+	}
+	if let Some(m) = mem.get(&(from, to, robots))
+	{
+		return *m
 	}
 
-	let m = mem.get(&(from, to, robots));
-	if m.is_some() { return *m.unwrap() }
-
-	let paths = path_mem.get(&(frst, from, to)).unwrap();
+	let paths = path_mem.get(&(numpad, from, to)).unwrap();
 	let min_time = paths
 		.into_iter()
 		.map(|path| {
 			let z = String::from("A") + &path;
 			z.chars().zip(path.chars())
 					 .map(|(from, to)| move_time(path_mem, mem, from, to, robots-1, false))
-					 .sum::<u64>()
+					 .sum()
 		})
 		.min().unwrap();
 	mem.insert((from, to, robots), min_time);
@@ -142,9 +142,8 @@ fn keypad_movement(
 	code : &str,
 	robots : usize) -> u64
 {
-	let mut path_mem = HashMap::new();
-
 	// pre-compute alle paths
+	let mut path_mem = HashMap::new();
 	for from in NUM_PAD.chars() {
 		for to in NUM_PAD.chars() {
 			path_mem.insert((true, from, to), find_path(NUM_PAD, from, to));
@@ -157,16 +156,11 @@ fn keypad_movement(
 	}
 
 	// sub paths van eerste niveau
-	let mut totl_time = 0;
-	for i in 0..code.chars().count() {
-		let to = code.chars().nth(i).unwrap();
-		let mut from = 'A';
-		if i > 0 { from = code.chars().nth(i-1).unwrap(); }
-		totl_time += move_time(&path_mem, mem, from, to, robots, true);
-	}
-
-	println!("{:?}", mem);
-	totl_time
+	let z = String::from("A") + &code;
+	z.chars()
+		.zip(code.chars())
+		.map(|(from, to)| move_time(&path_mem, mem, from, to, robots, true))
+		.sum()
 }
 
 // =============================================================================

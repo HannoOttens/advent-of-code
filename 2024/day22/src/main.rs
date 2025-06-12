@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 extern crate shared;
 
 const DAY : i32 = 22;
@@ -54,76 +56,49 @@ fn total_number(monkeys : Vec<usize>) -> usize {
 // vv part b
 // =============================================================================
 
-fn monkey_price(
-	mut time : usize, monkey : usize,
-	c1 : i32, c2 : i32, c3 : i32, c4 : i32
-) -> i32 {
-	let mut n = monkey;
+fn monkey_price(mut n : usize) -> HashMap<(i8, i8, i8, i8), i32>
+{
+	let mut n2 = (n % 10) as i8; n = next(n);
+	let mut n3 = (n % 10) as i8; n = next(n);
+	let mut n4 = (n % 10) as i8; n = next(n);
+	let mut n5 = (n % 10) as i8;
 
-	// Genereer eerste 4 changes
-	let mut n2 = (n % 10) as i32;
-	n = next(n);
-	let mut n3 = (n % 10) as i32;
-	n = next(n);
-	let mut n4 = (n % 10) as i32;
-	n = next(n);
-	let mut n5 = (n % 10) as i32;
-	time = time - 4;
-
+	let mut time = 2000 - 4;
+	let mut map = HashMap::new();
 	while time > 0 {
 		let n1 = n2;
 		n2 = n3;
 		n3 = n4;
 		n4 = n5;
-		n = next(n);
-		n5 = (n % 10) as i32;
 
-		if (c1 == (n2 - n1))
-		&& (c2 == (n3 - n2))
-		&& (c3 == (n4 - n3))
-		&& (c4 == (n5 - n4)) {
-			return n5;
+		n = next(n);
+		n5 = (n % 10) as i8;
+
+		let key = ((n2 - n1), (n3 - n2), (n4 - n3), (n5 - n4));
+		if !map.contains_key(&key) {
+			map.insert(key, n5 as i32);
 		}
 
 		time -= 1;
 	}
-	0
-}
-
-fn monkey_bananas(
-	monkeys : &Vec<usize>,
-	best_money : i32,
-	c1 : i32, c2 : i32, c3 : i32, c4 : i32
-) -> i32 {
-	// test op onmogelijke sequences
-	if (c1 + c2).abs() > 9 { return 0; }
-	if (c2 + c3).abs() > 9 { return 0; }
-	if (c3 + c4).abs() > 9 { return 0; }
-	if (c1 + c2 + c3).abs() > 9 { return 0; }
-	if (c2 + c3 + c4).abs() > 9 { return 0; }
-	if (c1 + c2 + c3 + c4).abs() > 9 { return 0; }
-
-	let mut curr_money = 0;
-	let mut curr_index = 0;
-	for monkey in monkeys {
-		curr_money = curr_money + monkey_price(2000, *monkey, c1, c2, c3, c4);
-		curr_index += 1;
-		if curr_money < best_money - ((monkeys.len() - curr_index) as i32 * 9) {
-			return 0;
-		}
-	}
-	curr_money
+	map
 }
 
 // =============================================================================
 
 fn total_bananas(monkeys : Vec<usize>) -> i32 {
-	let mut money = 250;
+	let mems : Vec<_> = monkeys.iter()
+		.map(|monkey| monkey_price(*monkey))
+		.collect();
+
+	let mut money = 0;
 	for c1 in -9..10 {
-		for c2 in -9..10 {
-			for c3 in -9..10 {
-				for c4 in -9..10 {
-					let curr = monkey_bananas(&monkeys, money,  c1, c2, c3, c4);
+		for c2 in -9..10 as i8 {
+			for c3 in -9..10 as i8 {
+				for c4 in -9..10 as i8 {
+					let curr = mems.iter()
+						.map(|mem| *mem.get(&(c1, c2, c3, c4)).unwrap_or(&0))
+						.sum::<i32>();
 					if curr > money { money = curr; }
 				}
 			}
@@ -173,7 +148,7 @@ mod tests {
 
 	#[test]
     fn test_part_b_123() {
-		assert_eq!(monkey_price(10, 123,-1, -1, 0, 2), 6);
+		assert_eq!(*(monkey_price(123).get(&(-1, -1, 0, 2)).unwrap()), 6);
     }
 
 	#[test]

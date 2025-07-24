@@ -6,9 +6,9 @@ open Shared.Shared
 let isVowel char = List.contains char ['a'; 'e'; 'i'; 'o'; 'u']
 let isNaugthy (a,b) = List.contains (string a + string b) ["ab";"cd";"pq";"xy"]
 
-let vowels str = str |> Seq.filter isVowel |> Seq.length
+let vowels = Seq.filter isVowel >> Seq.length
 
-let doubleChars dist (str:string) =
+let doubleChars dist str =
     str
     |> Seq.skip dist
     |> Seq.zip str
@@ -22,10 +22,7 @@ let isNice str =
     && doubleChars 1 str
     && not (naughtyPairs str)
 
-let partA inp =
-    inp
-    |> Seq.filter isNice
-    |> Seq.length
+let partA = Seq.filter isNice >> Seq.length
 
 // --------------------------- Part B ------------------------------------------
 
@@ -38,10 +35,7 @@ let twoPair (line:string) =
     |> Seq.mapi (fun i (a,b) -> i+2, string a + string b)
     |> Seq.exists (fun (i,pair) -> containsAfter line i pair)
 
-let partB (inp:seq<string>) =
-    inp
-    |> Seq.filter (fun str -> doubleChars 2 str && twoPair str)
-    |> Seq.length
+let partB = Seq.filter (fun str -> doubleChars 2 str && twoPair str) >> Seq.length
 
 // --------------------------- Entry -------------------------------------------
 

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func check(e error) {
@@ -79,20 +80,24 @@ func part_a(numbers []string) {
 func process(low, high, n_digits int64) int64 {
 	total_doubles := int64(0)
 	for i := range 1 + (n_digits / 2) {
-		if i > 0 && n_digits%i == 0 {
-			range_low := drop_last_n(n_digits-i, low)
-			range_high := drop_last_n(n_digits-i, high)
+		if i == 0 || n_digits%i != 0 {
+			continue
+		}
 
-			for curr := range_low; curr <= range_high; curr++ {
-				if process(curr, curr, i) == 0 {
-					dble := curr
-					for range n_digits/i - 1 {
-						dble = curr + dble*pow(10, i)
-					}
-					if (dble >= low) && (dble <= high) {
-						total_doubles += dble
-					}
-				}
+		range_low := drop_last_n(n_digits-i, low)
+		range_high := drop_last_n(n_digits-i, high)
+
+		for curr := range_low; curr <= range_high; curr++ {
+			if process(curr, curr, i) == 0 {
+				continue
+			}
+
+			dble := curr
+			for range n_digits/i - 1 {
+				dble = curr + dble*pow(10, i)
+			}
+			if (dble >= low) && (dble <= high) {
+				total_doubles += dble
 			}
 		}
 	}
@@ -124,8 +129,14 @@ func main() {
 	dat, err := os.ReadFile(path)
 	check(err)
 
+	start := time.Now()
+
 	str := string(dat)
 	numbers := strings.Split(str, ",")
+
 	part_a(numbers)
 	part_b(numbers)
+
+	elapsed := time.Since(start)
+	fmt.Printf("Runtime %s", elapsed)
 }

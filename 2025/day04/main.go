@@ -58,32 +58,21 @@ func part_a(grid [][]byte) {
 //------------------------------------------------------------------------------
 // vv part b vv
 
-type Posn struct {
-	x int
-	y int
-}
-
 func part_b(grid [][]byte) {
 	forked_rolls := 0
 
-	fork_any := true
-	for fork_any {
-		forkable := map[Posn]bool{}
+	prev_forked_rolls := -1
+	for forked_rolls != prev_forked_rolls {
+		prev_forked_rolls = forked_rolls
 
 		for y := range grid {
 			for x := range grid[y] {
 				if (pick(grid, x, y) == '@') && (count_adjecent(grid, x, y) < 4) {
-					forkable[Posn{x: x, y: y}] = true
+					grid[y][x] = '.'
+					forked_rolls++
 				}
 			}
 		}
-
-		for posn := range forkable {
-			forked_rolls++
-			grid[posn.y][posn.x] = '.'
-		}
-
-		fork_any = len(forkable) > 0
 	}
 
 	fmt.Println("Part B:", forked_rolls)

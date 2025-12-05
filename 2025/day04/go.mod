@@ -1,3 +1,3 @@
-module day02
+module day04
 
 go 1.25.4

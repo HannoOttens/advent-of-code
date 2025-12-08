@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -15,6 +17,18 @@ func check(e error) {
 // vv parsing vv
 
 func read_in(part_b bool) []TYPE {
+	path := "../inputs/xx.txt"
+	dat, err := os.ReadFile(path)
+	check(err)
+
+	str := string(dat)
+	rows := strings.Split(str, "\r\n")
+
+	grid := make([][]byte, len(rows))
+	for i := range rows {
+		grid[i] = []byte(rows[i])
+	}
+	return grid
 }
 
 //------------------------------------------------------------------------------

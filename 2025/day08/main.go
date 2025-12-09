@@ -65,9 +65,9 @@ func distance(a Posn, b Posn) float64 {
 	return math.Sqrt(dx*dx + dy*dy + dz*dz)
 }
 
-func part_a(positions []Posn) {
-	// Find distances and sort by
-	distances := make([]Dist, 0, len(positions)*(len(positions)-1)/2)
+func calc_dinstances(positions []Posn) []Dist {
+	pairs := len(positions) * (len(positions) - 1) / 2
+	distances := make([]Dist, 0, pairs)
 	for i1, p1 := range positions {
 		for i2, p2 := range positions {
 			if i2 <= i1 {
@@ -85,6 +85,12 @@ func part_a(positions []Posn) {
 	slices.SortFunc(distances, func(a, b Dist) int {
 		return cmp.Compare(a.dist, b.dist)
 	})
+	return distances
+}
+
+func part_a(positions []Posn) {
+	// Find distances and sort by
+	distances := calc_dinstances(positions)
 
 	// Find circuits by joining the first 1000 closest pairs
 	circuits := make([]int, len(positions))
@@ -149,24 +155,7 @@ func all_equal(circuits []int) bool {
 
 func part_b(positions []Posn) {
 	// Find distances and sort by
-	distances := make([]Dist, 0, len(positions)*(len(positions)-1)/2)
-	for i1, p1 := range positions {
-		for i2, p2 := range positions {
-			if i2 <= i1 {
-				continue
-			}
-
-			dist := distance(p1, p2)
-			distances = append(distances, Dist{
-				p1:   i1,
-				p2:   i2,
-				dist: dist,
-			})
-		}
-	}
-	slices.SortFunc(distances, func(a, b Dist) int {
-		return cmp.Compare(a.dist, b.dist)
-	})
+	distances := calc_dinstances(positions)
 
 	// Find circuits until were done
 	circuits := make([]int, len(positions))
@@ -200,17 +189,18 @@ func part_b(positions []Posn) {
 	fmt.Println("Part B:", positions[last_dist.p1].x*positions[last_dist.p2].x)
 }
 
-// too low: 365704830
-
 //------------------------------------------------------------------------------
 
 func main() {
-	start := time.Now()
 
 	positions := read_in()
+	start := time.Now()
 	part_a(positions)
-	part_b(positions)
-
 	elapsed := time.Since(start)
-	fmt.Printf("Runtime %s", elapsed)
+	fmt.Printf("Runtime - Part A: %s\n", elapsed)
+
+	start = time.Now()
+	part_b(positions)
+	elapsed = time.Since(start)
+	fmt.Printf("Runtime - Part B: %s\n", elapsed)
 }
